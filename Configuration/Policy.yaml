@@ -1,0 +1,17 @@
+privilegeTargets:
+  'TYPO3\Flow\Security\Authorization\Privilege\Method\MethodPrivilege':
+    'PITS.TranslationHelper:StandardController':
+      matcher: 'method(PITS\TranslationHelper\Controller\StandardController->.*Action())'
+    'PITS.TranslationHelper:TranslationFileManipulatorController':
+      matcher: 'method(PITS\TranslationHelper\Controller\TranslationFileManipulatorController->.*Action())'
+roles:
+  'TYPO3.Neos:Editor':
+    privileges:
+      -
+        privilegeTarget: 'PITS.TranslationHelper:StandardController'
+        permission: GRANT
+  'TYPO3.Flow:Everybody':
+    privileges:
+      -
+        privilegeTarget: 'PITS.TranslationHelper:TranslationFileManipulatorController'
+        permission: GRANT

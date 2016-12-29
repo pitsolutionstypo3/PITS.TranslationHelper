@@ -1,0 +1,45 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<f:layout name="Default" />
+<f:section name="Content">
+<style type="text/css">
+.neos .neos-row-fluid {
+  padding: 5px 0;
+}
+</style>
+<div class="neos-row-fluid">
+
+    <div class="neos-row-fluid">
+
+      <table class="neos-table">
+        <thead>
+          <tr>
+            <th>
+              <f:translate id="packages.key" source="Modules" locale="{localeIndicator}" package="TYPO3.Neos">Package</f:translate>
+            </th>
+            <th>&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <f:if condition="{activePackagesSize}>0">
+            <f:then>
+                <f:for each="{activePackages}" as="activePackage">
+                  <tr>
+                    <td>{activePackage}</td>
+                    <td>
+                      <f:link.action controller="Standard" action="redirectCorrectTranslation" data="{neos-toggle:'tooltip',original-title:'View Translation files'}" arguments="{redirectInput:activePackage,redirectFrom:'packageKey'}" class="neos-button neos-button-primary">
+                        <i class="icon-info-sign icon-white"></i>
+                      </f:link.action>
+                    </td>
+                  </tr>
+                </f:for>
+            </f:then>
+          </f:if>
+        </tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+</f:section>

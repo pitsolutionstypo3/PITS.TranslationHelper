@@ -1,0 +1,30 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<div class="neos-content neos-container-fluid">
+  <div class="neos-row-fluid">
+
+    <f:link.action class="neos-button" controller="Standard" action="index" package="PITS.TranslationHelper">
+      {neos:backend.translate(id: 'package', value: 'Package')}
+    </f:link.action>
+
+    <f:link.action id="pitTranslationHelperTranlationFilesPageLink" class="neos-button" controller="Standard" action="getAvailableTranslationFilesInPackage" package="PITS.TranslationHelper" style="display:none;">
+      <f:translate id="translationFiles" locale="{localeIndicator}" package="TYPO3.Neos">Translation Files</f:translate>
+    </f:link.action>
+
+    <f:link.action id="pitTranslationHelperTranslationsPageLink" class="neos-button" controller="Standard" action="getCurrentTranslationFileTranslations" package="PITS.TranslationHelper" style="display:none;">
+      <f:translate id="translations" locale="{localeIndicator}" package="TYPO3.Neos">Translations</f:translate>
+    </f:link.action>
+
+  </div>
+
+  <f:flashMessages as="flashMessages">
+  	<f:if condition="{flashMessages -> f:count()} > 0">
+  		<ul id="neos-notifications-inline">
+  			<f:for each="{flashMessages}" as="flashMessage">
+  				<li data-type="{flashMessage.severity -> f:format.case(mode: 'lower')}">{neos:backend.translate(id: 'flashMessage.{flashMessage.code}', arguments: flashMessage.arguments, value: flashMessage)}</li>
+  			</f:for>
+  		</ul>
+  	</f:if>
+  </f:flashMessages>
+
+  <f:render section="Content" />
+</div>

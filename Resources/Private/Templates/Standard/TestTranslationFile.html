@@ -1,0 +1,20 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+<f:layout name="Default" />
+<f:section name="Content">
+<style type="text/css">
+.neos .neos-row-fluid {
+  padding: 5px 0;
+}
+.translationsShowTableOverflow {
+  overflow-x: scroll;
+  overflow-y: auto;
+}
+</style>
+
+<div class="neos-row-fluid">
+
+  <f:debug title="Test">{results}</f:debug>
+
+</div>
+
+</f:section>
