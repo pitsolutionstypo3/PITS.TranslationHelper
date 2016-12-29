@@ -89,16 +89,16 @@ $(document).ready(function() {
                 <tr id="addTranslationUnitProcessRow">
                   <f:form method="POST" class="commonTranslationHelperForm" id="pitTranslationHelper_add_translationUnit_form" name="pitTranslationHelper_add_translationUnit_form" method="post" action="getCurrentTranslationFileTranslations" controller="Standard" package="PITS.TranslationHelper" enctype="multipart/form-data" >
                     <td class="translate_key">
-                      <f:form.textarea class="pitsTranslationBlockstranslationKeyDescription" id="pitTranslationHelper_add_translationUnit_translationId"  name="pitTranslationHelper_add_translationUnit_translationId" rows="2" cols="80"  />
+                      <f:form.textarea class="pitsTranslationBlockstranslationKeyDescription pitTranslationBlockResetTextArea" id="pitTranslationHelper_add_translationUnit_translationId"  name="pitTranslationHelper_add_translationUnit_translationId" rows="2" cols="80"  />
                     </td>
                     <f:for each="{translatedLanguages}" as="translatedLanguage" key="translatedLanguageKey">
                       <td>
                         <div>
-                          <f:form.textarea class="pitsTranslationUnitBlockLabel" id="pitTranslationHelper_add_translationUnit_translationLabel_{translatedLanguageKey}"  name="pitTranslationHelper_add_translationUnit_translationLabel_{translatedLanguageKey}" rows="2" cols="80"  />
+                          <f:form.textarea class="pitsTranslationUnitBlockLabel pitTranslationBlockResetTextArea" id="pitTranslationHelper_add_translationUnit_translationLabel_{translatedLanguageKey}"  name="pitTranslationHelper_add_translationUnit_translationLabel_{translatedLanguageKey}" rows="2" cols="80"  />
                           <f:form.hidden name="pitTranslationHelper_add_translationUnit_translationLanguage_{translatedLanguageKey}" id="pitTranslationHelper_add_translationUnit_translationLanguage_{translatedLanguageKey}" value="{translatedLanguage}" />
                         </div>
                         <div class="cdata_selection">
-                          <f:form.checkbox name="pitTranslationHelper_add_translationUnit_CDATASection_{translatedLanguageKey}" id="pitTranslationHelper_add_translationUnit_CDATASection_{translatedLanguageKey}" value="1"  /> CDATA
+                          <f:form.checkbox class="pitTranslationBlockResetCheckBox" name="pitTranslationHelper_add_translationUnit_CDATASection_{translatedLanguageKey}" id="pitTranslationHelper_add_translationUnit_CDATASection_{translatedLanguageKey}" value="1"  /> CDATA
                         </div>
                       </td>
                     </f:for>
@@ -370,10 +370,6 @@ function resetSelectedTranslationUnitLabel(event,element) {
     resetTranslationDescriptionValue = $(pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector).data("reset");
     $(pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector).val(resetTranslationDescriptionValue);
   }
-
-  // var description_field = element.parent().find('.pitsTranslationBlockstranslationKeyDescription');
-  // var old_desc_value = description_field.data("reset");
-  // description_field.val(old_desc_value);
 }
 
 // For deleting the entire set of translation units
@@ -485,6 +481,10 @@ function addNewTranslationUnitToSetOfFiles(event) {
           pitsTranslatedTableRow = pitsTranslatedTableRow + getTranslationUnitDeleteTableColumnContent(translationIdsSize,addTranslationUnitTranslationUnitId);
           pitsTranslatedTableRow = pitsTranslatedTableRow + '</tr>';
           $("#addTranslationUnitProcessRow").after(pitsTranslatedTableRow);
+
+          //Resetting the data entered fields
+          $(".pitTranslationBlockResetTextArea").val("");
+          $(".pitTranslationBlockResetCheckBox").removeAttr("checked");
         }
         $('.translation_notifications').html(result.message);
       },
