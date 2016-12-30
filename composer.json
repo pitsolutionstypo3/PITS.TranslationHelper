@@ -1,19 +1,7 @@
 {
     "description": "Neos CMS Translation manager backend plugin",
     "type": "neos-package",
-    "license": "GPL-2.0+",
-    "authors": [
-  		{
-  			"name": "PIT Solutions Private Limited, Trivandrum, India",
-  			"email": "typo3team@pitsolutions.com",
-  			"homepage": "http://pitsolutions.ch"
-  		},
-      {
-        "name": "Joson George",
-  			"email": "josongvmtechphp@gmail.com",
-  			"homepage": "http://pitsolutions.ch"
-      }
-	  ],
+    "license": "MIT",
     "require": {
         "typo3/flow": "*"
     },
