@@ -1,11 +1,11 @@
 {
+    "name": "pits/translationhelper",
     "description": "Neos CMS Translation manager backend plugin",
     "type": "neos-package",
-    "license": "MIT",
+    "license": "GPL-3.0+",
     "require": {
         "typo3/flow": "*"
     },
-    "name": "pits/translationhelper",
     "autoload": {
         "psr-0": {
             "PITS\\TranslationHelper": "Classes/"
