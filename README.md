@@ -1,5 +1,5 @@
 # PITS.TranslationHelper
-This is a backend Neos cms plugin for using translation file management in NEOS CMS.
+This backend plugin is used for managing translations in the translation files of NEOS CMS.
 ## Installation steps
 
 -   First Install this NEOS CMS plugin using composer.
