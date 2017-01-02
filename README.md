@@ -33,3 +33,5 @@ php ./flow typo3.flow:cache:warmup
 ![Image](translationHelperScreenshoot/packageList.png)
 -   If a user click any of the package, then this particular user enters into the translation files list page. The below screenshot shows the list of translation files inside **Joson.Work** package.
 ![Image](translationHelperScreenshoot/translationFiles.png)
+-   If a user click any of the translation file, then this particular user enters into the translation units list page. The below screenshot shows the list of translation units inside **Main.xlf** file.
+![Image](translationHelperScreenshoot/translationUnitsPage.png)
