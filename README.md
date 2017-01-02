@@ -27,3 +27,7 @@ php ./flow typo3.flow:cache:flush
 php ./flow typo3.flow:cache:warmup
 ```
 -   Open your NEOS CMS site backend, then you can see **Translation Module** under **Management** main module.
+
+## Plugin Details
+-   You can see list of translation files contained packages.
+![Image](translationHelperScreenshoot/packageList.png)
