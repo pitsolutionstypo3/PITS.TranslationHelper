@@ -271,7 +271,8 @@ class TranslationHelperCommonSevices
         $packageKey                               = $this->translationManagementSession->getTranslationPackageKey();
         $translationsResourcePath                 = $this->getFlowPackageResourceTranslationPath($packageKey);
         //$translatedLanguages                    = $this->getCurrentActiveSiteLanguages();
-        $translatedLanguages                      = $this->getAllAvailableTranslationLanguagesFromTranslationPackage($translationsResourcePath);
+        $translatedLanguages                      = array_merge_recursive($this->getCurrentActiveSiteLanguages(), $this->getAllAvailableTranslationLanguagesFromTranslationPackage($translationsResourcePath));
+        $translatedLanguages                      = array_unique($translatedLanguages);
         $translationFile                          = $this->translationManagementSession->getTranslationFile();
         $availableTranslationFile                 = "";
         $this->currentlyAvailableTranslationFiles = array();
