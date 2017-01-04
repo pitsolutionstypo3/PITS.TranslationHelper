@@ -664,6 +664,9 @@
       <trans-unit id="service.nodes.nodeProperties" xml:space="preserve" approved="yes">
 				<source>Node Properties</source>
 			<target xml:lang="da">Indholdselement egenskaber</target><alt-trans><target xml:lang="da">Elementegenskaber</target></alt-trans><alt-trans><target xml:lang="da">Indholdsegenskaber</target></alt-trans></trans-unit>
+      <trans-unit id="test.test" xml:space="preserve">
+        <target/>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -664,6 +664,9 @@
       <trans-unit id="service.nodes.nodeProperties" xml:space="preserve">
 				<source>Node Properties</source>
 			<target xml:lang="nl" state="translated">Node eigenschappen</target></trans-unit>
+      <trans-unit id="test.test" xml:space="preserve">
+        <target/>
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -40,6 +40,8 @@
 }
 .translation_notifications {
   text-align: center;
+  margin-bottom: 4px;
+  color: #00b5ff;
 }
 td.pitTranslatioHelperDeleteTableData {
     vertical-align: top;
@@ -51,8 +53,8 @@ td.pitTranslatioHelperDeleteTableData {
   width: 100%;
 }
 .translation-box {
-  overflow-x: scroll;
-  overflow-y: hidden;
+  #overflow-x: scroll;
+  #overflow-y: hidden;
 }
 </style>
 <script type="text/javascript">
@@ -345,9 +347,11 @@ function addAndModifyASingleTranslationUnit(event,element) {
       success: function(result,status,xhr) {
         // console.log(result);
         $('.translation_notifications').html(result.message);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
       },
       error: function(xhr,status,error) {
         $('.translation_notifications').html(error);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
       }
     });
   }
@@ -409,9 +413,11 @@ function deleteSelectedTranslationUnitId(event,element) {
         // console.log(result);
         $(pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector).remove();
         $('.translation_notifications').html(result.message);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
       },
       error: function(xhr,status,error) {
         $('.translation_notifications').html(error);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
 
       }
     });
@@ -435,16 +441,19 @@ function addNewTranslationUnitToSetOfFiles(event) {
   $('.translation_notifications').html("");
   if( $.trim(addTranslationUnitTranslationUnitId) == "" ) {
     $('.translation_notifications').html("Please add translation unit Id");
+    setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
     flag1 = 1;
   } else {
     translationUnitValidityCheckRegExp = /^[a-zA-Z]([a-zA-Z0-9_\.]*)[a-zA-Z0-9]$/i;
     if( translationUnitValidityCheckRegExp.test(addTranslationUnitTranslationUnitId) == false ) {
       $('.translation_notifications').html("Incorrect translation unit Id");
+      setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
       flag1 = 1;
     }
   }
   if( pitstranslationManagerTotalLanguagesCount < 1 ) {
     $('.translation_notifications').html("No active languages");
+    setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
     flag1 = 1;
   } else {
     for (translationLabelCount = 0; translationLabelCount < pitstranslationManagerTotalLanguagesCount; translationLabelCount++) {
@@ -491,9 +500,11 @@ function addNewTranslationUnitToSetOfFiles(event) {
           $(".pitTranslationBlockResetCheckBox").removeAttr("checked");
         }
         $('.translation_notifications').html(result.message);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
       },
       error: function(xhr,status,error) {
         $('.translation_notifications').html(error);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
 
       }
     });
