@@ -1,6 +1,6 @@
 {
     "name": "pits/translationhelper",
-    "description": "Neos CMS Translation manager backend plugin",
+    "description": "Neos CMS Translation files manager backend plugin",
     "type": "neos-package",
     "license": "GPL-3.0",
     "authors": [

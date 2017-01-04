@@ -34,6 +34,20 @@
                   </tr>
                 </f:for>
             </f:then>
+            <f:else>
+              <f:if condition="{translatedLanguagesSize}<1">
+                <f:then>
+                  <tr>
+                    <td colspan="2">Please configure language dimension in site's Settings.yaml file.</td>
+                  </tr>
+                </f:then>
+                <f:else>
+                <tr>
+                  <td colspan="2">No Data</td>
+                </tr>
+                </f:else>
+              </f:if>
+            </f:else>
           </f:if>
         </tbody>
       </table>

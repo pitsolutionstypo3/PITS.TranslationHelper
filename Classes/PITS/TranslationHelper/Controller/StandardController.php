@@ -55,11 +55,18 @@ class StandardController extends \TYPO3\Flow\Mvc\Controller\ActionController
         $this->translationManagementSession->setTranslationPackageKey("");
         $this->translationManagementSession->setTranslationFile("");
 
-        $activePackages     = $this->translationHelperCommonSevices->getActivePackagesForTranslation();
-        $activePackagesSize = sizeof($activePackages);
+        $activePackages     = array();
+        $activePackagesSize = 0;
+
+        $translatedLanguages = $this->translationHelperCommonSevices->getCurrentActiveSiteLanguages();
+        if (empty($translatedLanguages) == false) {
+            $activePackages     = $this->translationHelperCommonSevices->getActivePackagesForTranslation();
+            $activePackagesSize = sizeof($activePackages);
+        }
         $this->view->assignMultiple(array(
-            "activePackages"     => $activePackages,
-            "activePackagesSize" => $activePackagesSize,
+            "activePackages"          => $activePackages,
+            "activePackagesSize"      => $activePackagesSize,
+            "translatedLanguagesSize" => sizeof($translatedLanguages),
         ));
     }
 
@@ -99,6 +106,10 @@ class StandardController extends \TYPO3\Flow\Mvc\Controller\ActionController
      */
     public function getAvailableTranslationFilesInPackageAction()
     {
+        $translatedLanguages = $this->translationHelperCommonSevices->getCurrentActiveSiteLanguages();
+        if (empty($translatedLanguages) == true) {
+            $this->redirect("index", "Standard", "Pits.TranslationHelper");
+        }
         $this->parentFolderName      = "";
         $packageKey                  = $this->translationManagementSession->getTranslationPackageKey();
         $packageTranslationFiles     = $this->translationHelperCommonSevices->getAllTranslationFilesList($this->parentFolderName);
@@ -117,10 +128,13 @@ class StandardController extends \TYPO3\Flow\Mvc\Controller\ActionController
      */
     public function getCurrentTranslationFileTranslationsAction()
     {
+        $translatedLanguages = $this->translationHelperCommonSevices->getCurrentActiveSiteLanguages();
+        if (empty($translatedLanguages) == true) {
+            $this->redirect("index", "Standard", "Pits.TranslationHelper");
+        }
         $this->translationHelperCommonSevices->checkTranslationFilesExists();
         $translationIds      = $this->translationHelperCommonSevices->getUniqueTranslationIdsFromTranslationFile();
         $translationIdsSize  = sizeof($translationIds);
-        $translatedLanguages = $this->translationHelperCommonSevices->getCurrentActiveSiteLanguages();
         $translationFileName = $this->translationManagementSession->getTranslationFile();
         $packageKey          = $this->translationManagementSession->getTranslationPackageKey();
         $translationSource   = $this->translationHelperCommonSevices->getPrefixFileName();
