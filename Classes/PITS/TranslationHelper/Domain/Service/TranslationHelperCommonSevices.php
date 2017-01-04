@@ -177,12 +177,52 @@ class TranslationHelperCommonSevices
         $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
         $translationsResourcePath = $this->getFlowPackageResourceTranslationPath($packageKey);
         $translatedLanguages      = $this->getCurrentActiveSiteLanguages();
-        foreach ($translatedLanguages as $translatedLanguage) {
+
+        // List all available translation files in a package
+        $availableTranslationPackageLanguages = $this->getAllAvailableTranslationLanguagesFromTranslationPackage($translationsResourcePath);
+        foreach ($availableTranslationPackageLanguages as $translatedLanguage) {
             $translationEachLanguageDirectory = $translationsResourcePath . trim($translatedLanguage) . "/";
             $this->getTranslatedFilesFromDirectory($translationEachLanguageDirectory, $finalTranslatedFiles);
         }
+
         $finalTranslatedFiles = array_unique($finalTranslatedFiles);
         return $finalTranslatedFiles;
+    }
+
+    /**
+     * This function gets the list of languages from current translation package
+     * @param string $packageDirectoryFolderPath
+     * @return mixed
+     */
+    public function getAllAvailableTranslationLanguagesFromTranslationPackage(
+        $packageDirectoryFolderPath = ""
+    ) {
+        $availableLanguages = array();
+        try {
+            if (empty($packageDirectoryFolderPath) == false) {
+                if ((is_dir($packageDirectoryFolderPath) == true) && (file_exists($packageDirectoryFolderPath) == true)) {
+                    $directoryPointer = dir($packageDirectoryFolderPath);
+                    if ($directoryPointer !== false) {
+                        while (($directoryFile = $directoryPointer->read()) !== false) {
+                            $regExp = "/^\.+$/i";
+                            if (preg_match($regExp, trim($directoryFile), $matches) == false) {
+                                $directoryFilePath = trim($packageDirectoryFolderPath) . trim($directoryFile) . "/";
+                                if (is_dir($directoryFilePath) == true) {
+                                    $availableLanguages[] = trim($directoryFile);
+                                }
+                            }
+                        }
+                        $directoryPointer->close();
+                    }
+                }
+                \clearstatcache();
+            }
+        } catch (\Exception $e) {
+          // \TYPO3\Flow\var_dump($e->getMessage());
+          // exit;
+          $availableLanguages = array();
+        }
+        return $availableLanguages;
     }
 
     /**
@@ -230,55 +270,43 @@ class TranslationHelperCommonSevices
     {
         $packageKey                               = $this->translationManagementSession->getTranslationPackageKey();
         $translationsResourcePath                 = $this->getFlowPackageResourceTranslationPath($packageKey);
-        $translatedLanguages                      = $this->getCurrentActiveSiteLanguages();
+        //$translatedLanguages                    = $this->getCurrentActiveSiteLanguages();
+        $translatedLanguages                      = $this->getAllAvailableTranslationLanguagesFromTranslationPackage($translationsResourcePath);
         $translationFile                          = $this->translationManagementSession->getTranslationFile();
         $availableTranslationFile                 = "";
         $this->currentlyAvailableTranslationFiles = array();
         try {
 
             if (sizeof($translatedLanguages) > 0) {
-                // Getting available translation file for performing copying functionality.
                 foreach ($translatedLanguages as $translatedLanguage) {
-                    $translationFilePath = trim($translationsResourcePath) . trim($translatedLanguage) . "/" . trim($translationFile);
-                    if ((file_exists($translationFilePath) == true) && (is_file($translationFilePath) == true)) {
-                        $availableTranslationFile = trim($translationFilePath);
-                        break;
-                    }
-                }
-
-                if (empty($availableTranslationFile) == false) {
-
-                    foreach ($translatedLanguages as $translatedLanguage) {
-                        //Getting correct directory path
-                        $translationsSourceFiles           = $this->getPrefixFileName();
-                        $translationFileDirectorySmallPath = "";
-                        if (empty($translationsSourceFiles) == false) {
-                            $translationsSourceFilesParts = explode("/", trim($translationsSourceFiles));
-                            if (empty($translationsSourceFilesParts) == false) {
-                                array_pop($translationsSourceFilesParts);
-                                $translationFileDirectorySmallPath = implode("/", $translationsSourceFilesParts);
-                            }
+                    //Getting correct directory path
+                    $translationsSourceFiles           = $this->getPrefixFileName();
+                    $translationFileDirectorySmallPath = "";
+                    if (empty($translationsSourceFiles) == false) {
+                        $translationsSourceFilesParts = explode("/", trim($translationsSourceFiles));
+                        if (empty($translationsSourceFilesParts) == false) {
+                            array_pop($translationsSourceFilesParts);
+                            $translationFileDirectorySmallPath = implode("/", $translationsSourceFilesParts);
                         }
-                        $translationFileDirectory = trim($translationsResourcePath) . trim($translatedLanguage) . "/";
-                        $translationFilePath      = trim($translationFileDirectory) . trim($translationFile);
-                        $translationFileDirectory = trim($translationFileDirectory) . trim($translationFileDirectorySmallPath);
+                    }
+                    $translationFileDirectory = trim($translationsResourcePath) . trim($translatedLanguage) . "/";
+                    $translationFilePath      = trim($translationFileDirectory) . trim($translationFile);
+                    $translationFileDirectory = trim($translationFileDirectory) . trim($translationFileDirectorySmallPath);
 
-                        if (file_exists($translationFilePath) == false) {
-                            if (file_exists(trim($translationFileDirectory)) == false) {
-                                \mkdir($translationFileDirectory, 0777, true);
-                            }
-                            if (file_exists(trim($translationFilePath)) == false) {
-                                \touch($translationFilePath);
-                            }
-                            if ((file_exists(trim($translationFilePath)) == true) && (is_file(trim($translationFilePath)) == true)) {
-                                $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
-                            }
-                        } else if (filesize($translationFilePath) <= 0) {
+                    if (file_exists($translationFilePath) == false) {
+                        if (file_exists(trim($translationFileDirectory)) == false) {
+                            \mkdir($translationFileDirectory, 0777, true);
+                        }
+                        if (file_exists(trim($translationFilePath)) == false) {
+                            \touch($translationFilePath);
+                        }
+                        if ((file_exists(trim($translationFilePath)) == true) && (is_file(trim($translationFilePath)) == true)) {
                             $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
                         }
-                        $this->currentlyAvailableTranslationFiles[] = trim($translationFilePath);
-
+                    } else if (filesize($translationFilePath) <= 0) {
+                        $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
                     }
+                    $this->currentlyAvailableTranslationFiles[] = trim($translationFilePath);
 
                 }
 
