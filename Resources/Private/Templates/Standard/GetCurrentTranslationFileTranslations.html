@@ -58,14 +58,33 @@ div.translation-box {
   overflow: hidden;
   overflow-x: scroll;
 }
+.pitTranslationHelperTranslationsTableListSearchFunctionalityDiv {
+  float: none;
+  clear: both;
+  overflow: hidden;
+}
+.pitTranslationHelperTranslationsTableListSearchFunctionalityDiv span {
+  float: right;
+  overflow: hidden;
+}
+table.translation-table-list {
+  clear: both;
+  float: none;
+}
+#pitTranslationHelperTranslationsTableList_filter {
+  display: none;
+}
 </style>
+
 <script type="text/javascript">
 $(document).ready(function() {
   $("#pitTranslationHelperTranlationFilesPageLink").show();
   $("#pitTranslationHelperTranslationsPageLink").show();
 });
-
 </script>
+
+<link rel="stylesheet" type="text/css" href="{f:uri.resource(path: 'CSS/jquery.dataTables.css',package:'PITS.TranslationHelper')}">
+<script type="text/javascript" charset="utf8" src="{f:uri.resource(path: 'Javascript/jquery.dataTables.js',package:'PITS.TranslationHelper')}"></script>
 
 <div class="translation-box">
   <div>
@@ -75,6 +94,11 @@ $(document).ready(function() {
       </legend>
       <div class="translation_notifications">  </div>
       <div class="neos-control-group">
+        <div class="pitTranslationHelperTranslationsTableListSearchFunctionalityDiv">
+          <span>
+            Search: <input type="text" id="pitTranslationHelperTranslationsTableSearchInput" />
+          </span>
+        </div>
         <table class="translation-table-list">
           <thead>
             <tr>
@@ -121,7 +145,25 @@ $(document).ready(function() {
                 </tr>
               </f:then>
             </f:if>
-
+          </tbody>
+        </table>
+        <table id="pitTranslationHelperTranslationsTableList" class="translation-table-list">
+          <thead>
+            <tr style="display: none;">
+              <th>
+                <f:translate id="translationId" locale="{localeIndicator}" package="PITS.TranslationHelper">Translation File</f:translate>
+              </th>
+              <f:if condition="{translatedLanguagesSize}>0">
+                <f:then>
+                  <f:for each="{translatedLanguages}" as="translatedLanguage">
+                    <th>{translatedLanguage}</th>
+                  </f:for>
+                </f:then>
+              </f:if>
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
             <f:if condition="{translationIdsSize}>0">
               <f:then>
                   <f:for each="{translationIds}" as="translationId" key="translationKey">
@@ -232,11 +274,17 @@ var addTranslationUnitTranslationUnitCDATASectionContent = 0;
 var translationIdsSize = parseInt("{translationIdsSize}");
 var pitsTranslatedTableRow = "";
 var resetTranslationDescriptionValue = "";
+var dataTableInstance = undefined;
 
 $(document).ready(function() {
 
+  dataTableInstance = $('#pitTranslationHelperTranslationsTableList').DataTable({
+    "paging": false,
+    "ordering":  false,
+  });
+
   $("body").on('click', ".reset_translate_contents",function(event){
-    console.log("Resetting Dynamic contents");
+    // console.log("Resetting Dynamic contents");
     element = $(this);
     resetSelectedTranslationUnitLabel(event,element);
   });
@@ -260,6 +308,14 @@ $(document).ready(function() {
     addNewTranslationUnitToSetOfFiles(event);
   });
 
+  $("#pitTranslationHelperTranslationsTableSearchInput").keyup(function(event){
+    pitTranslationHelperSeachFunctionality();
+  });
+
+  $("#pitTranslationHelperTranslationsTableSearchInput").keydown(function(event){
+    pitTranslationHelperSeachFunctionality();
+  });
+
 });
 
 function isset ()
@@ -277,6 +333,10 @@ function isset ()
     }
   }
   return true;
+}
+
+function pitTranslationHelperSeachFunctionality(){
+  dataTableInstance.search( $("#pitTranslationHelperTranslationsTableSearchInput").val() ).draw();
 }
 
 function getTranslationUnitCommonInputPart(
@@ -413,7 +473,8 @@ function deleteSelectedTranslationUnitId(event,element) {
       },
       success: function(result,status,xhr) {
         // console.log(result);
-        $(pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector).remove();
+        // $(pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector).remove();
+        dataTableInstance.row($(pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector)).remove().draw();
         $('.translation_notifications').html(result.message);
         setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
       },
@@ -495,7 +556,8 @@ function addNewTranslationUnitToSetOfFiles(event) {
           }
           pitsTranslatedTableRow = pitsTranslatedTableRow + getTranslationUnitDeleteTableColumnContent(translationIdsSize,addTranslationUnitTranslationUnitId);
           pitsTranslatedTableRow = pitsTranslatedTableRow + '</tr>';
-          $("#addTranslationUnitProcessRow").after(pitsTranslatedTableRow);
+          // $("#addTranslationUnitProcessRow").after(pitsTranslatedTableRow);
+          dataTableInstance.row.add($(pitsTranslatedTableRow)).draw().node();
 
           //Resetting the data entered fields
           $(".pitTranslationBlockResetTextArea").val("");
