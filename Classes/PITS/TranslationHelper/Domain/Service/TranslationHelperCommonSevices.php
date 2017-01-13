@@ -405,7 +405,10 @@ class TranslationHelperCommonSevices
                     // let's have a nice output
                     $translationXMLPointer->preserveWhiteSpace = false;
                     $translationXMLPointer->formatOutput       = true;
-                    $translationXMLPointer->load($translationFile);
+                    $translationXMLPointer->encoding= "UTF-8";
+                    $translationXMLPointer->resolveExternals= TRUE;
+
+                    $translationXMLPointer->load($translationFile, LIBXML_NOENT);
 
                     $results = $translationXMLPointer->documentElement->getElementsByTagName("trans-unit");
                     if (empty($results) == false) {
@@ -521,8 +524,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
+            $domXmlPointer->encoding= "UTF-8";
+            $domXmlPointer->resolveExternals= TRUE;
 
-            $domXmlPointer->load($translationFile);
+            $domXmlPointer->load($translationFile, LIBXML_NOENT);
 
             if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -572,8 +577,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
+            $domXmlPointer->encoding= "UTF-8";
+            $domXmlPointer->resolveExternals= TRUE;
 
-            $domXmlPointer->load($translationFile);
+            $domXmlPointer->load($translationFile, LIBXML_NOENT);
 
             if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -585,6 +592,8 @@ class TranslationHelperCommonSevices
                 $newTransUnitElement = $domXmlPointer->createElement("trans-unit");
                 $newTransUnitElement->setAttribute("id", trim($translationId));
                 $newTransUnitElement->setAttribute("xml:space", "preserve");
+
+                $translationLabel = htmlentities($translationLabel,ENT_QUOTES,"UTF-8");
 
                 // Check whether the given translation label is CDATA or not
                 if ($translationCDATAContentChecker == 1) {
@@ -603,7 +612,7 @@ class TranslationHelperCommonSevices
             }
             $domXmlPointer = null;
         } catch (\Exception $e) {
-            $output = false;
+          $output = false;
         }
         return $output;
     }
@@ -625,7 +634,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
-            $domXmlPointer->load($translationFile);
+            $domXmlPointer->encoding= "UTF-8";
+            $domXmlPointer->resolveExternals= TRUE;
+
+            $domXmlPointer->load($translationFile, LIBXML_NOENT);
 
             if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -678,8 +690,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
+            $domXmlPointer->encoding= "UTF-8";
+            $domXmlPointer->resolveExternals= TRUE;
 
-            $domXmlPointer->load($translationFileFullPath);
+            $domXmlPointer->load($translationFileFullPath, LIBXML_NOENT);
 
             if ((empty($domXmlPointer) == false) && (empty($translationlabelId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
