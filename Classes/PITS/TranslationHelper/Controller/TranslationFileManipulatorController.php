@@ -220,6 +220,25 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
                     if ($duplicateTranslationId == 1) {
                         $errorMsg[] = "Duplicate translation unit.";
                         $flag       = 1;
+                    } else {
+                      foreach ($translationUnitLanguages as $translationUnitLanguagekey => $translationUnitLanguage) {
+                          $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
+                          if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
+                              $translationLabel               = "";
+                              $translationCDATAContentChecker = 0;
+                              if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
+                                  $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
+                              }
+                              if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
+                                  $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
+                              }
+                              $translationUnitCommonValidationResult = $this->translationHelperCommonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage);
+                              if( empty($translationUnitCommonValidationResult) == false ) {
+                                $errorMsg[] = trim($translationUnitCommonValidationResult);
+                                $flag       = 1;
+                              }
+                          }
+                      }
                     }
                 }
             }
