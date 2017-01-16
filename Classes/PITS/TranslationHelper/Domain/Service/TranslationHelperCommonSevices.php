@@ -405,14 +405,10 @@ class TranslationHelperCommonSevices
                     // let's have a nice output
                     $translationXMLPointer->preserveWhiteSpace = false;
                     $translationXMLPointer->formatOutput       = true;
-<<<<<<< HEAD
-                    $translationXMLPointer->load($translationFile);
-=======
                     $translationXMLPointer->encoding= "UTF-8";
                     $translationXMLPointer->resolveExternals= TRUE;
 
                     $translationXMLPointer->load($translationFile, LIBXML_NOENT);
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
 
                     $results = $translationXMLPointer->documentElement->getElementsByTagName("trans-unit");
                     if (empty($results) == false) {
@@ -528,15 +524,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
-<<<<<<< HEAD
-
-            $domXmlPointer->load($translationFile);
-=======
             $domXmlPointer->encoding= "UTF-8";
             $domXmlPointer->resolveExternals= TRUE;
 
             $domXmlPointer->load($translationFile, LIBXML_NOENT);
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
 
             if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -586,15 +577,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
-<<<<<<< HEAD
-
-            $domXmlPointer->load($translationFile);
-=======
             $domXmlPointer->encoding= "UTF-8";
             $domXmlPointer->resolveExternals= TRUE;
 
             $domXmlPointer->load($translationFile, LIBXML_NOENT);
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
 
             if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -607,11 +593,8 @@ class TranslationHelperCommonSevices
                 $newTransUnitElement->setAttribute("id", trim($translationId));
                 $newTransUnitElement->setAttribute("xml:space", "preserve");
 
-<<<<<<< HEAD
-=======
-                $translationLabel = htmlentities($translationLabel,ENT_QUOTES,"UTF-8");
+                //$translationLabel = htmlentities($translationLabel,ENT_QUOTES,"UTF-8");
 
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
                 // Check whether the given translation label is CDATA or not
                 if ($translationCDATAContentChecker == 1) {
                     $newSourceTagForUnitElement      = $domXmlPointer->createElement("target");
@@ -629,11 +612,7 @@ class TranslationHelperCommonSevices
             }
             $domXmlPointer = null;
         } catch (\Exception $e) {
-<<<<<<< HEAD
-            $output = false;
-=======
           $output = false;
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
         }
         return $output;
     }
@@ -655,14 +634,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
-<<<<<<< HEAD
-            $domXmlPointer->load($translationFile);
-=======
             $domXmlPointer->encoding= "UTF-8";
             $domXmlPointer->resolveExternals= TRUE;
 
             $domXmlPointer->load($translationFile, LIBXML_NOENT);
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
 
             if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -715,15 +690,10 @@ class TranslationHelperCommonSevices
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
-<<<<<<< HEAD
-
-            $domXmlPointer->load($translationFileFullPath);
-=======
             $domXmlPointer->encoding= "UTF-8";
             $domXmlPointer->resolveExternals= TRUE;
 
             $domXmlPointer->load($translationFileFullPath, LIBXML_NOENT);
->>>>>>> 6a299a4c09be5c566ff7ee9b23587f2038617fc0
 
             if ((empty($domXmlPointer) == false) && (empty($translationlabelId) == false)) {
                 $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
@@ -763,6 +733,41 @@ class TranslationHelperCommonSevices
             $output = 0;
         }
         return $output;
+    }
+
+    /**
+    * @param string $translationLabel
+    * @param integer $translationCDATAContentChecker
+    * @param string $translationUnitLanguagekey
+    * @return mixed
+    */
+    public function performCommonTranslationLabelValidation(
+    $translationLabel = "",
+    $translationCDATAContentChecker = 0,
+    $translationUnitLanguagekey = ""
+    ) {
+      $flag     = 0;
+      $errorMsg = array();
+
+      if( $translationCDATAContentChecker == 0 ) {
+        if( preg_match("/[a-zA-Z0-9\s\.]*/i", $translationLabel,$translationLabelRegExpCheckerWithoutCDATAMatches) != 1) {
+          $errorMsg[] = "Invalid language (".trim($translationUnitLanguagekey).") translation Label.Only allow english letters, numbers,dot,and whitespace.";
+          $flag = 1;
+        }
+        else {
+          if( ( ctype_alnum($translationLabel) == false ) && ( empty($translationLabel) == false ) ) {
+            $errorMsg[] ="Invalid language (".trim($translationUnitLanguagekey).")  translation Label.Only allow english letters, numbers,dot,and whitespace.";
+            $flag = 1;
+          }
+        }
+      }
+      if( $flag == 1) {
+        return implode(",",$errorMsg);
+      }
+      else {
+        return "";
+      }
+
     }
 
 }
