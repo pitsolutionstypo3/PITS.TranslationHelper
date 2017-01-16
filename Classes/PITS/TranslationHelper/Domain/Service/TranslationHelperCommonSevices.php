@@ -453,13 +453,15 @@ class TranslationHelperCommonSevices
      * @param string $translationId
      * @param string $translationLabel
      * @param integer $translationCDATAContentChecker
+     * @param integer $translationUnitEncodingDecisionChecker
      * @return mixed
      */
     public function performCURDOpertionsOnTranslationFiles(
         $translationFile = "",
         $translationId = "",
         $translationLabel = "",
-        $translationCDATAContentChecker = 0
+        $translationCDATAContentChecker = 0,
+        $translationUnitEncodingDecisionChecker = 0
     ) {
         try {
             $output = array(
@@ -471,7 +473,7 @@ class TranslationHelperCommonSevices
 
                 $translationIdInstance = $this->checkGivenTranslationIdExists($translationFile, $translationId);
                 if (empty($translationIdInstance) == true) {
-                    $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker);
+                    $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
                     if ($addNewTranslationUnitResult == false) {
                         $output = array(
                             "status"  => "error",
@@ -486,7 +488,7 @@ class TranslationHelperCommonSevices
                             "message" => "Cannot remove selected translation unit",
                         );
                     } else {
-                        $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker);
+                        $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
                         if ($addNewTranslationUnitResult == false) {
                             $output = array(
                                 "status"  => "error",
@@ -562,13 +564,15 @@ class TranslationHelperCommonSevices
      * @param string $translationId
      * @param string $translationLabel
      * @param integer $translationCDATAContentChecker
+     * @param integer $translationUnitEncodingDecisionChecker
      * @return mixed
      */
     public function addNewTranslationUnitToCurrentTranslationFile(
         $translationFile = "",
         $translationId = "",
         $translationLabel = "",
-        $translationCDATAContentChecker = 0
+        $translationCDATAContentChecker = 0,
+        $translationUnitEncodingDecisionChecker = 0
     ) {
         $output         = true;
         $bodyTagElement = null;
@@ -593,7 +597,9 @@ class TranslationHelperCommonSevices
                 $newTransUnitElement->setAttribute("id", trim($translationId));
                 $newTransUnitElement->setAttribute("xml:space", "preserve");
 
-                //$translationLabel = htmlentities($translationLabel,ENT_QUOTES,"UTF-8");
+                if( $translationUnitEncodingDecisionChecker == 1) {
+                  $translationLabel = htmlentities($translationLabel,ENT_QUOTES,"UTF-8");
+                }
 
                 // Check whether the given translation label is CDATA or not
                 if ($translationCDATAContentChecker == 1) {
@@ -739,17 +745,19 @@ class TranslationHelperCommonSevices
     * @param string $translationLabel
     * @param integer $translationCDATAContentChecker
     * @param string $translationUnitLanguagekey
+    * @param integer $translationUnitEncodingDecision
     * @return mixed
     */
     public function performCommonTranslationLabelValidation(
     $translationLabel = "",
     $translationCDATAContentChecker = 0,
-    $translationUnitLanguagekey = ""
+    $translationUnitLanguagekey = "",
+    $translationUnitEncodingDecision = 0
     ) {
       $flag     = 0;
       $errorMsg = array();
 
-      if( $translationCDATAContentChecker == 0 ) {
+      if( ( $translationCDATAContentChecker == 0 ) || ( $translationUnitEncodingDecision == 0 ) ) {
         if( preg_match("/[a-zA-Z0-9\s\.]*/i", $translationLabel,$translationLabelRegExpCheckerWithoutCDATAMatches) != 1) {
           $errorMsg[] = "Invalid language (".trim($translationUnitLanguagekey).") translation Label.Only allow english letters, numbers,dot,and whitespace.";
           $flag = 1;

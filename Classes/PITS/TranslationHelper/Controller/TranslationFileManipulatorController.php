@@ -38,13 +38,15 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
      * @param string $translationLabel
      * @param string $translationLanguage
      * @param string $translationCDATAContentChecker
+     * @param string $translationUnitEncodingDecisionChecker
      * @return void
      */
     public function indexAction(
         $translationId = "",
         $translationLabel = "",
         $translationLanguage = "",
-        $translationCDATAContentChecker = 0
+        $translationCDATAContentChecker = 0,
+        $translationUnitEncodingDecisionChecker = 0
     ) {
         $output = array(
             "status"  => "error",
@@ -81,6 +83,12 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
                 if (file_exists($translationFileFullPath) == false) {
                     $errorMsg[] = "translation file does not exist.";
                     $flag       = 1;
+                } else {
+                  $translationUnitCommonValidationResult = $this->translationHelperCommonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationLanguage, $translationUnitEncodingDecisionChecker);
+                  if( empty($translationUnitCommonValidationResult) == false ) {
+                    $errorMsg[] = trim($translationUnitCommonValidationResult);
+                    $flag       = 1;
+                  }
                 }
             }
 
@@ -90,7 +98,7 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
                     "message" => implode(",", $errorMsg),
                 );
             } else {
-                $output = $this->translationHelperCommonSevices->performCURDOpertionsOnTranslationFiles($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker);
+                $output = $this->translationHelperCommonSevices->performCURDOpertionsOnTranslationFiles($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
             }
 
         } catch (\Exception $e) {
@@ -178,6 +186,7 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
      * @param array $translationUnitLabels
      * @param array $translationUnitLanguages
      * @param array $translationUnitCDATASections
+     * @param array $translationUnitEncodingDecisions
      * @return void
      */
     public function addTransaltionUnitAction(
@@ -185,7 +194,8 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
         $csrfToken = "",
         $translationUnitLabels = array(),
         $translationUnitLanguages = array(),
-        $translationUnitCDATASections = array()
+        $translationUnitCDATASections = array(),
+        $translationUnitEncodingDecisions = array()
     ) {
         $output = array(
             "status"  => "error",
@@ -226,13 +236,17 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
                           if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
                               $translationLabel               = "";
                               $translationCDATAContentChecker = 0;
+                              $translationUnitEncodingDecisionChecker = 0;
                               if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
                                   $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
                               }
                               if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
                                   $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
                               }
-                              $translationUnitCommonValidationResult = $this->translationHelperCommonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage);
+                              if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
+                                  $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
+                              }
+                              $translationUnitCommonValidationResult = $this->translationHelperCommonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage, $translationUnitEncodingDecisionChecker);
                               if( empty($translationUnitCommonValidationResult) == false ) {
                                 $errorMsg[] = trim($translationUnitCommonValidationResult);
                                 $flag       = 1;
@@ -260,7 +274,10 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
                         if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
                             $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
                         }
-                        $translationUnitAdditionSuccess = $this->translationHelperCommonSevices->addNewTranslationUnitToCurrentTranslationFile($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker);
+                        if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
+                            $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
+                        }
+                        $translationUnitAdditionSuccess = $this->translationHelperCommonSevices->addNewTranslationUnitToCurrentTranslationFile($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
                     }
                 }
 
