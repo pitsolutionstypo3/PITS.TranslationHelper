@@ -1,0 +1,580 @@
+{namespace neos=TYPO3\Neos\ViewHelpers}
+{namespace pitsTranslationHelper=PITS\TranslationHelper\Domain\ViewHelper}
+<f:layout name="Default" />
+<f:section name="Content">
+<style type="text/css">
+.neos .neos-row-fluid {
+  padding: 5px 0;
+}
+.translationsShowTableOverflow {
+  overflow-x: scroll;
+  overflow-y: auto;
+}
+.translate_key {
+  width: 250px;
+  display: inline-block;
+  word-wrap:break-word;
+  line-height: 20px !important;
+}
+.translation-table-list {
+  display: block;
+  /*
+  height: 500px;
+  width: 1300px;
+  */
+  overflow: auto;
+}
+.translation-table-list td {
+  padding: 1px !important;
+  border-color: grey;
+}
+.translation-table-list th {
+  padding: 1px !important;
+}
+.translation_row {
+  display : block;
+  width: 1000px;
+  overflow: auto;
+}
+.cdata_selection {
+  display: block;
+  padding-right: 2px;
+}
+.translation_notifications {
+  text-align: center;
+  margin-bottom: 4px;
+  color: #00b5ff;
+}
+td.pitTranslatioHelperDeleteTableData {
+    vertical-align: top;
+}
+.pitTranslatioHelperDeleteTableData div {
+    margin-left: 20px;
+}
+.translate_key .pitsTranslationBlockstranslationKeyDescription {
+  width: 100%;
+}
+div.translation-box {
+  overflow: hidden;
+  overflow-x: scroll;
+}
+.pitTranslationHelperTranslationsTableListSearchFunctionalityDiv {
+  float: none;
+  clear: both;
+  overflow: hidden;
+}
+.pitTranslationHelperTranslationsTableListSearchFunctionalityDiv span {
+  /* float: right; */
+  overflow: hidden;
+}
+table.translation-table-list {
+  clear: both;
+  float: none;
+}
+#pitTranslationHelperTranslationsTableList_filter {
+  display: none;
+}
+</style>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#pitTranslationHelperTranlationFilesPageLink").show();
+  $("#pitTranslationHelperTranslationsPageLink").show();
+});
+</script>
+
+<link rel="stylesheet" type="text/css" href="{f:uri.resource(path: 'CSS/jquery.dataTables.css',package:'PITS.TranslationHelper')}">
+<script type="text/javascript" charset="utf8" src="{f:uri.resource(path: 'Javascript/jquery.dataTables.js',package:'PITS.TranslationHelper')}"></script>
+
+<div class="translation-box">
+  <div>
+    <fieldset>
+      <legend>
+        {translationFileName} <f:translate id="translations" locale="{localeIndicator}" package="PITS.TranslationHelper">Translations</f:translate> from {packageKey}
+      </legend>
+      <div class="translation_notifications">  </div>
+      <div class="neos-control-group">
+        <div class="pitTranslationHelperTranslationsTableListSearchFunctionalityDiv">
+          <span>
+            Search: <input type="text" id="pitTranslationHelperTranslationsTableSearchInput" />
+          </span>
+        </div>
+        <table class="translation-table-list">
+          <thead>
+            <tr>
+              <th>
+                <f:translate id="translationId" locale="{localeIndicator}" package="PITS.TranslationHelper">Translation File</f:translate>
+              </th>
+              <f:if condition="{translatedLanguagesSize}>0">
+                <f:then>
+                  <f:for each="{translatedLanguages}" as="translatedLanguage">
+                    <th>{translatedLanguage}</th>
+                  </f:for>
+                </f:then>
+              </f:if>
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <f:if condition="{translatedLanguagesSize}>0">
+              <f:then>
+                <tr id="addTranslationUnitProcessRow">
+                  <f:form method="POST" class="commonTranslationHelperForm" id="pitTranslationHelper_add_translationUnit_form" name="pitTranslationHelper_add_translationUnit_form" method="post" action="getCurrentTranslationFileTranslations" controller="Standard" package="PITS.TranslationHelper" enctype="multipart/form-data" >
+                    <td class="translate_key">
+                      <f:form.textarea class="pitsTranslationBlockstranslationKeyDescription pitTranslationBlockResetTextArea" id="pitTranslationHelper_add_translationUnit_translationId"  name="pitTranslationHelper_add_translationUnit_translationId" rows="2" cols="80"  />
+                    </td>
+                    <f:for each="{translatedLanguages}" as="translatedLanguage" key="translatedLanguageKey">
+                      <td>
+                        <div>
+                          <f:form.textarea class="pitsTranslationUnitBlockLabel pitTranslationBlockResetTextArea" id="pitTranslationHelper_add_translationUnit_translationLabel_{translatedLanguageKey}"  name="pitTranslationHelper_add_translationUnit_translationLabel_{translatedLanguageKey}" rows="2" cols="80"  />
+                          <f:form.hidden name="pitTranslationHelper_add_translationUnit_translationLanguage_{translatedLanguageKey}" id="pitTranslationHelper_add_translationUnit_translationLanguage_{translatedLanguageKey}" value="{translatedLanguage}" />
+                        </div>
+                        <div class="cdata_selection">
+                          <f:form.checkbox class="pitTranslationBlockResetCheckBox" name="pitTranslationHelper_add_translationUnit_CDATASection_{translatedLanguageKey}" id="pitTranslationHelper_add_translationUnit_CDATASection_{translatedLanguageKey}" value="1"  /> CDATA
+                        </div>
+                      </td>
+                    </f:for>
+                    <td class="pitTranslatioHelperDeleteTableData">
+                      <div>
+                        <f:form.button type="submit" name="pitTranslationHelper_add_translationUnit_submit" id="pitTranslationHelper_add_translationUnit_submit" class="neos-button neos-button-primary" value="{f:translate(id:'save',locale:'en',value:'save',package:'PITS.TranslationHelper')}" data="{'neos-toggle':'tooltip','original-title':'Add'}">
+                          <i class="icon-plus icon-white"></i>
+                        </f:form.button>
+                      </div>
+                    </td>
+                  </f:form>
+                </tr>
+              </f:then>
+            </f:if>
+          </tbody>
+        </table>
+        <table id="pitTranslationHelperTranslationsTableList" class="translation-table-list">
+          <thead>
+            <tr style="display: none;">
+              <th>
+                <f:translate id="translationId" locale="{localeIndicator}" package="PITS.TranslationHelper">Translation File</f:translate>
+              </th>
+              <f:if condition="{translatedLanguagesSize}>0">
+                <f:then>
+                  <f:for each="{translatedLanguages}" as="translatedLanguage">
+                    <th>{translatedLanguage}</th>
+                  </f:for>
+                </f:then>
+              </f:if>
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <f:if condition="{translationIdsSize}>0">
+              <f:then>
+                  <f:for each="{translationIds}" as="translationId" key="translationKey">
+                    <tr id="pitTranslationUnitDelete_{translationKey}_tableRow">
+                      <td class="translate_key"> {translationId}</td>
+                      <f:if condition="{translatedLanguagesSize}>0">
+                        <f:then>
+                          <f:for each="{translatedLanguages}" as="translatedLanguage" key="translatedLanguageKey">
+                            <td>
+                              <div>
+                                <f:form method="post" class="commonTranslationHelperForm" action="getCurrentTranslationFileTranslations" controller="Standard" package="PITS.TranslationHelper" name="translation_{translationKey}_language_{translatedLanguageKey}_form" enctype="multipart/form-data" >
+                                  <f:form.textarea class="pitsTranslationBlockstranslationKeyDescription" id="translation_{translationKey}_language_{translatedLanguageKey}_description"  data="{'reset': '{f:translate(id:translationId,package:packageKey,locale:translatedLanguage,source:translationSource,value:\' \')}'}" name="translation_{translationKey}_language_{translatedLanguageKey}_description" rows="2" cols="80" value="{f:translate(id:translationId,package:packageKey,locale:translatedLanguage,source:translationSource,value:' ')}" />
+                                  <f:form.hidden name="translation_{translationKey}_language_{translatedLanguageKey}_translationId" id="translation_{translationKey}_language_{translatedLanguageKey}_translationId" value="{translationId}" />
+                                  <f:form.hidden name="translation_{translationKey}_language_{translatedLanguageKey}_language" id="translation_{translationKey}_language_{translatedLanguageKey}_language" value="{translatedLanguage}" />
+                                  <div class="cdata_selection">
+                                    <f:form.checkbox name="translation_{translationKey}_language_{translatedLanguageKey}_cdataSection" id="translation_{translationKey}_language_{translatedLanguageKey}_cdataSection" value="1" checked="{pitsTranslationHelper:CDATAContentChecker(translationlabelId:translationId,package:packageKey,locale:translatedLanguage,source:translationSource)}" /> CDATA
+                                  </div>
+                                  <div>
+                                    <f:form.submit class="neos-button neos-button-small pitsTranslationHelperAjaxSubmitBtn" id="translation_{translationKey}_language_{translatedLanguageKey}_submit" value="{f:translate(id:'save',locale:'en',value:'save',package:'PITS.TranslationHelper')}" />
+                                    <button type="button" id="translation_{translationKey}_language_{translatedLanguageKey}_reset" class="neos-button neos-button-small reset_translate_contents">
+                                      {f:translate(id:'reset',locale:'en',value:'reset',package:'PITS.TranslationHelper')}
+                                    </button>
+                                  </div>
+
+                                </f:form>
+                              </div>
+
+                            </td>
+                          </f:for>
+                        </f:then>
+                      </f:if>
+                      <td class="pitTranslatioHelperDeleteTableData">
+                        <div>
+                          <button class="neos-button neos-button-danger" title="{neos:backend.translate(id: 'delete', source: 'Modules', package: 'TYPO3.Neos')}" data-toggle="modal" href="#pitTranslationUnitDelete_{translationKey}_model" data-neos-toggle="tooltip">
+                          	<i class="icon-trash icon-white"></i>
+                          </button>
+                          <div class="neos-hide" id="pitTranslationUnitDelete_{translationKey}_model">
+                          	<div class="neos-modal-centered">
+                          		<div class="neos-modal-content">
+                          			<div class="neos-modal-header">
+                          				<button type="button" class="neos-close neos-button" data-dismiss="modal"></button>
+                          				<div class="neos-header">
+                          					<f:translate id="content.navigate.deleteNodeDialog.header" locale="{localeIndicator}" package="PITS.TranslationHelper">Do you really want to delete</f:translate>
+                          				</div>
+                          				<div>
+                          					<div class="neos-subheader">
+                          						<p>
+                          							<f:translate id="operationCannotBeUndone" locale="{localeIndicator}" package="PITS.TranslationHelper">This operation cannot be undone.</f:translate>
+                          						</p>
+                          					</div>
+                          				</div>
+                          			</div>
+                          			<div class="neos-modal-footer">
+                          				<a href="#" class="neos-button" data-dismiss="modal">{neos:backend.translate(id: 'cancel', value: 'Cancel')}</a>
+                          				<f:form method="post" id="pitTranslationUnitDelete_{translationKey}_form" action="getCurrentTranslationFileTranslations" controller="Standard" package="PITS.TranslationHelper" class="neos-inline commonTranslationHelperForm">
+                          					<f:form.hidden name="csrfToken" value="{f:security.csrfToken()}" />
+                          					<f:form.hidden id="pitTranslationUnitDelete_{translationKey}_translationId" name="pitTranslationUnitDelete_{translationKey}_translationId" value="{translationId}" />
+                          					<button type="submit" id="pitTranslationUnitDelete_{translationKey}_submit" data-dismiss="modal" class="neos-button neos-button-danger pitTranslationUnitDeleteButton" title="{neos:backend.translate(id: 'delete', source: 'Modules', package: 'TYPO3.Neos')}">
+                                      <f:translate id="delete" locale="{localeIndicator}" package="PITS.TranslationHelper">Delete</f:translate>
+                                    </button>
+                          				</f:form>
+                          			</div>
+                          		</div>
+                          	</div>
+                          	<div class="neos-modal-backdrop neos-in"></div>
+                          </div>
+
+                        </div>
+                      </td>
+                    </tr>
+                  </f:for>
+              </f:then>
+            </f:if>
+          </tbody>
+        </table>
+
+      </div>
+
+    </fieldset>
+  </div>
+</div>
+
+<script type="text/javascript">
+var pitsTranslationHelperAjaxFormCommonPart = "";
+var pitsTranslationHelperAjaxFormSmallPart ="";
+var pitsTranslationHelperAjaxFormTranslationId = "";
+var pitsTranslationHelperAjaxFormTranslationDescription = "";
+var pitsTranslationHelperAjaxFormTranslationLanguage = "";
+var pitsTranslationHelperAjaxFormCDATAContent;
+var pitsTranslationHelperAjaxtranslationIdJQuerySelector = "";
+var pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector = "";
+var pitsTranslationHelperAjaxtranslationLanguageJQuerySelector = "";
+var pitsTranslationHelper_ajaxMessageJQuerySelector = "";
+var pitsTranslationHelperAjaxFormCDATAContentJQuerySelector = "";
+var pitsTranslationHelperAjaxUrl = "/pitstranslationManager/process";
+var pitsTranslationHelperDeleteAjaxUrl = "/pitstranslationManager/delete";
+var pitsTranslationHelperAddAjaxUrl = "/pitstranslationManager/add";
+var pitstranslationManagerToken = "{f:security.csrfToken()}";
+var pitstranslationManagerTotalLanguagesCount = parseInt("{translatedLanguagesSize}");
+var addTranslationUnitTranslationUnitId = "";
+var addTranslationUnitTranslationUnitLabels = [];
+var addTranslationUnitTranslationUnitLabelJQuerySelector = "";
+var addTranslationUnitTranslationUnitLanguages = [];
+var addTranslationUnitTranslationUnitLanguagesJQuerySelector = "";
+var addTranslationUnitTranslationUnitCDATASections = [];
+var addTranslationUnitTranslationUnitCDATASectionsSelector = "";
+var addTranslationUnitTranslationUnitCDATASectionContent = 0;
+var translationIdsSize = parseInt("{translationIdsSize}");
+var pitsTranslatedTableRow = "";
+var resetTranslationDescriptionValue = "";
+var dataTableInstance = undefined;
+
+$(document).ready(function() {
+
+  dataTableInstance = $('#pitTranslationHelperTranslationsTableList').DataTable({
+    "paging": false,
+    "ordering":  false,
+  });
+
+  $("body").on('click', ".reset_translate_contents",function(event){
+    // console.log("Resetting Dynamic contents");
+    element = $(this);
+    resetSelectedTranslationUnitLabel(event,element);
+  });
+
+  $("body").on('click', ".pitsTranslationHelperAjaxSubmitBtn",function(event){
+    element = $(this);
+    addAndModifyASingleTranslationUnit(event,element);
+  });
+
+  $("body").on('click', ".pitTranslationUnitDeleteButton",function(event){
+    element = $(this);
+    deleteSelectedTranslationUnitId(event,element);
+  });
+
+  $("body").on('submit', ".commonTranslationHelperForm",function(event){
+    event.preventDefault();
+    event.stopPropagation();
+  });
+
+  $("body").on('click', "#pitTranslationHelper_add_translationUnit_submit",function(event){
+    addNewTranslationUnitToSetOfFiles(event);
+  });
+
+  $("#pitTranslationHelperTranslationsTableSearchInput").keyup(function(event){
+    pitTranslationHelperSeachFunctionality();
+  });
+
+  $("#pitTranslationHelperTranslationsTableSearchInput").keydown(function(event){
+    pitTranslationHelperSeachFunctionality();
+  });
+
+});
+
+function isset ()
+{
+  var a = arguments,l = a.length,i = 0,undef;
+  if (l != 0)
+  {
+    while (i !== l)
+    {
+      if (a[i] === undef || a[i] === null)
+      {
+        return false;
+      }
+      i++;
+    }
+  }
+  return true;
+}
+
+function pitTranslationHelperSeachFunctionality(){
+  dataTableInstance.search( $("#pitTranslationHelperTranslationsTableSearchInput").val() ).draw();
+}
+
+function getTranslationUnitCommonInputPart(
+translationIdsSize=0,
+translationLabelCount=0,
+translationUnitLabel='',
+addTranslationUnitTranslationUnitId = '',
+addTranslationUnitTranslationUnitLanguages = "",
+addTranslationUnitTranslationUnitCDATASection = 0
+) {
+  var cdatasectionCheckerContent = "";
+  if( addTranslationUnitTranslationUnitCDATASection == 1 ) {
+    cdatasectionCheckerContent = ' checked="checked" ';
+  }
+  return '<td><div><form enctype="multipart/form-data" method="post" name="translation_'+translationIdsSize+'_language_'+translationLabelCount+'_form" action="/neos/management/pitsTranslatorModule/getcurrenttranslationfiletranslations" class="commonTranslationHelperForm"><div style="display: none"><input type="hidden" name="moduleArguments[__referrer][@package]" value="PITS.TranslationHelper"><input type="hidden" name="moduleArguments[__referrer][@subpackage]" value=""><input type="hidden" name="moduleArguments[__referrer][@controller]" value="Standard"><input type="hidden" name="moduleArguments[__referrer][@action]" value="getCurrentTranslationFileTranslations" /><input type="hidden" name="moduleArguments[__referrer][arguments]" value="YTowOnt9c198f88da83cee43d514b1b6b0018333888dc5c8" /><input type="hidden" name="__referrer[@package]" value="TYPO3.Neos" /><input type="hidden" name="__referrer[@subpackage]" value=""><input type="hidden" name="__referrer[@controller]" value="Backend\Module" /><input type="hidden" name="__referrer[@action]" value="index" /><input type="hidden" name="__referrer[arguments]" value="YToxOntzOjY6Im1vZHVsZSI7YTo0OntzOjY6Im1vZHVsZSI7czozMToibWFuYWdlbWVudC9waXRzVHJhbnNsYXRvck1vZHVsZSI7czoxMDoiY29udHJvbGxlciI7czo1MjoiUGl0c1xUcmFuc2xhdGlvbkhlbHBlclxDb250cm9sbGVyXFN0YW5kYXJkQ29udHJvbGxlciI7czo2OiJhY3Rpb24iO3M6Mzc6ImdldGN1cnJlbnR0cmFuc2xhdGlvbmZpbGV0cmFuc2xhdGlvbnMiO3M6NjoiZm9ybWF0IjtzOjQ6Imh0bWwiO319b05ed32b033a07de34ef6eb02a9d94a3c372b405" /><input type="hidden" name="moduleArguments[translation_'+translationIdsSize+'_language_'+translationLabelCount+'_cdataSection]" value="1" /><input type="hidden" name="moduleArguments[__trustedProperties]" value="a:4:{s:36:&quot;translation_0_language_0_description&quot;;i:1;s:38:&quot;translation_'+translationIdsSize+'_language_'+translationLabelCount+'_translationId&quot;;i:1;s:33:&quot;translation_'+translationIdsSize+'_language_'+translationLabelCount+'_language&quot;;i:1;s:37:&quot;translation_'+translationIdsSize+'_language_'+translationLabelCount+'_cdataSection&quot;;i:1;}9f622ec03863f27da05b5f8fb2473ab463c82f35" /><input type="hidden" name="__csrfToken" value="9fc3f9993a4bd9fcc100cc8d051f293e" /></div><textarea data-reset="'+translationUnitLabel+'" rows="2" cols="80" class="pitsTranslationBlockstranslationKeyDescription" id="translation_'+translationIdsSize+'_language_'+translationLabelCount+'_description">'+translationUnitLabel+'</textarea><input id="translation_'+translationIdsSize+'_language_'+translationLabelCount+'_translationId" type="hidden" value="'+addTranslationUnitTranslationUnitId+'" /><input id="translation_'+translationIdsSize+'_language_'+translationLabelCount+'_language" type="hidden" value="'+addTranslationUnitTranslationUnitLanguages+'" /><div class="cdata_selection"><input id="translation_'+translationIdsSize+'_language_'+translationLabelCount+'_cdataSection" type="checkbox" value="1"'+cdatasectionCheckerContent+' /> CDATA</div><div><input class="neos-button neos-button-small pitsTranslationHelperAjaxSubmitBtn" id="translation_'+translationIdsSize+'_language_' + translationLabelCount + '_submit" type="submit" value="Save"><button type="button" id="translation_'+translationIdsSize+'_language_'+translationLabelCount+'_reset" class="neos-button neos-button-small reset_translate_contents">reset</button></div></form></div></td>';
+}
+
+function getTranslationUnitDeleteTableColumnContent(
+translationIdsSize = 0,
+addTranslationUnitTranslationUnitId = ''
+) {
+  return '<td class="pitTranslatioHelperDeleteTableData"><div><button class="neos-button neos-button-danger" title="" data-toggle="modal" href="#pitTranslationUnitDelete_'+translationIdsSize+'_model" data-neos-toggle="tooltip" data-original-title="delete"><i class="icon-trash icon-white"></i></button><div class="neos-hide" id="pitTranslationUnitDelete_'+translationIdsSize+'_model"><div class="neos-modal-centered"><div class="neos-modal-content"><div class="neos-modal-header"><button type="button" class="neos-close neos-button" data-dismiss="modal"></button><div class="neos-header">Do you really want to delete</div><div><div class="neos-subheader"><p>This operation cannot be undone.</p></div></div></div><div class="neos-modal-footer"><a href="#" class="neos-button commonTranslationHelperForm" data-dismiss="modal">Cancel</a><form method="post" class="neos-inline" id="pitTranslationUnitDelete_'+translationIdsSize+'_form" action="/neos/management/pitsTranslatorModule/getcurrenttranslationfiletranslations"><div style="display: none"><input type="hidden" name="moduleArguments[__referrer][@package]" value="PITS.TranslationHelper" /><input type="hidden" name="moduleArguments[__referrer][@subpackage]" value="" /><input type="hidden" name="moduleArguments[__referrer][@controller]" value="Standard" /><input type="hidden" name="moduleArguments[__referrer][@action]" value="getCurrentTranslationFileTranslations" /><input type="hidden" name="moduleArguments[__referrer][arguments]" value="YTowOnt9c198f88da83cee43d514b1b6b0018333888dc5c8" /><input type="hidden" name="__referrer[@package]" value="TYPO3.Neos" /><input type="hidden" name="__referrer[@subpackage]" value="" /><input type="hidden" name="__referrer[@controller]" value="Backend\Module" /><input type="hidden" name="__referrer[@action]" value="index" /><input type="hidden" name="__referrer[arguments]" value="YToxOntzOjY6Im1vZHVsZSI7YTo0OntzOjY6Im1vZHVsZSI7czozMToibWFuYWdlbWVudC9waXRzVHJhbnNsYXRvck1vZHVsZSI7czoxMDoiY29udHJvbGxlciI7czo1MjoiUGl0c1xUcmFuc2xhdGlvbkhlbHBlclxDb250cm9sbGVyXFN0YW5kYXJkQ29udHJvbGxlciI7czo2OiJhY3Rpb24iO3M6Mzc6ImdldGN1cnJlbnR0cmFuc2xhdGlvbmZpbGV0cmFuc2xhdGlvbnMiO3M6NjoiZm9ybWF0IjtzOjQ6Imh0bWwiO319b05ed32b033a07de34ef6eb02a9d94a3c372b405" /><input type="hidden" name="moduleArguments[__trustedProperties]" value="a:2:{s:9:&quot;csrfToken&quot;;i:1;s:40:&quot;pitTranslationUnitDelete_'+translationIdsSize+'_translationId&quot;;i:1;}bc9338b49493e217d5a07173058483a02a0a7d8a" /><input type="hidden" name="__csrfToken" value="9fc3f9993a4bd9fcc100cc8d051f293e" /></div><input type="hidden" name="moduleArguments[csrfToken]" value=""><input id="pitTranslationUnitDelete_'+translationIdsSize+'_translationId" type="hidden" name="moduleArguments[pitTranslationUnitDelete_'+translationIdsSize+'_translationId]" value="'+addTranslationUnitTranslationUnitId+'"><button type="submit" id="pitTranslationUnitDelete_'+translationIdsSize+'_submit" data-dismiss="modal" class="neos-button neos-button-danger pitTranslationUnitDeleteButton" title="delete">Delete</button></form></div></div></div><div class="neos-modal-backdrop neos-in"></div></div></div></td>';
+}
+
+// For adding, and modifying translation unit
+function addAndModifyASingleTranslationUnit(event,element) {
+  event.preventDefault();
+  // Initialize each variales
+  pitsTranslationHelperAjaxFormCommonPart = "";
+  pitsTranslationHelperAjaxFormSmallPart ="";
+  pitsTranslationHelperAjaxFormTranslationId = "";
+  pitsTranslationHelperAjaxFormTranslationDescription = "";
+  pitsTranslationHelperAjaxFormTranslationLanguage = "";
+  pitsTranslationHelperAjaxFormCDATAContent = 0;
+  pitsTranslationHelperAjaxtranslationIdJQuerySelector = "";
+  pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector = "";
+  pitsTranslationHelperAjaxtranslationLanguageJQuerySelector = "";
+  pitsTranslationHelper_ajaxMessageJQuerySelector = "";
+  pitsTranslationHelperAjaxFormCDATAContentJQuerySelector = "";
+  pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector ="";
+
+  $(".translationFileManipulationIndicator").html("");
+  pitsTranslationHelperAjaxFormSmallPart = element.attr("id");
+  pitsTranslationHelperAjaxFormSmallPart = pitsTranslationHelperAjaxFormSmallPart.split("_submit");
+  if( isset(pitsTranslationHelperAjaxFormSmallPart[0]) == true ) {
+    pitsTranslationHelperAjaxFormCommonPart = pitsTranslationHelperAjaxFormSmallPart[0];
+  }
+  if( pitsTranslationHelperAjaxFormCommonPart != "" ) {
+    pitsTranslationHelperAjaxtranslationIdJQuerySelector = "#"+pitsTranslationHelperAjaxFormCommonPart+"_translationId";
+    pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector = "#"+pitsTranslationHelperAjaxFormCommonPart+"_description";
+    pitsTranslationHelperAjaxtranslationLanguageJQuerySelector = "#"+pitsTranslationHelperAjaxFormCommonPart+"_language";
+    pitsTranslationHelper_ajaxMessageJQuerySelector="#"+pitsTranslationHelperAjaxFormCommonPart+"_ajaxMessage";
+    pitsTranslationHelperAjaxFormCDATAContentJQuerySelector = pitsTranslationHelperAjaxFormCommonPart+"_cdataSection";
+    pitsTranslationHelperAjaxFormTranslationId = $(pitsTranslationHelperAjaxtranslationIdJQuerySelector).val();
+    pitsTranslationHelperAjaxFormTranslationDescription = $(pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector).val();
+    pitsTranslationHelperAjaxFormTranslationLanguage = $(pitsTranslationHelperAjaxtranslationLanguageJQuerySelector).val();
+    if(document.getElementById(pitsTranslationHelperAjaxFormCDATAContentJQuerySelector).checked) {
+      pitsTranslationHelperAjaxFormCDATAContent = 1;
+    }
+    $.ajax({
+      url: pitsTranslationHelperAjaxUrl,
+      type: "POST",
+      dataType: "json",
+      data: {
+        translationId: pitsTranslationHelperAjaxFormTranslationId,
+        translationLabel: pitsTranslationHelperAjaxFormTranslationDescription,
+        translationLanguage: pitsTranslationHelperAjaxFormTranslationLanguage,
+        translationCDATAContentChecker: pitsTranslationHelperAjaxFormCDATAContent
+      },
+      success: function(result,status,xhr) {
+        // console.log(result);
+        $('.translation_notifications').html(result.message);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+      },
+      error: function(xhr,status,error) {
+        $('.translation_notifications').html(error);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+      }
+    });
+  }
+}
+
+// Resetting the translated label
+function resetSelectedTranslationUnitLabel(event,element) {
+  // Initialize each variales
+  resetTranslationDescriptionValue = "";
+  pitsTranslationHelperAjaxFormCommonPart = "";
+  pitsTranslationHelperAjaxFormSmallPart = [];
+  pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector = "";
+  pitsTranslationHelperAjaxFormTranslationDescription = "";
+
+  $(".translationFileManipulationIndicator").html("");
+  pitsTranslationHelperAjaxFormSmallPart = element.attr("id");
+  pitsTranslationHelperAjaxFormSmallPart = pitsTranslationHelperAjaxFormSmallPart.split("_reset");
+  if( isset(pitsTranslationHelperAjaxFormSmallPart[0]) == true ) {
+    pitsTranslationHelperAjaxFormCommonPart = pitsTranslationHelperAjaxFormSmallPart[0];
+  }
+
+  if( pitsTranslationHelperAjaxFormCommonPart != "" ) {
+    pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector = "#"+pitsTranslationHelperAjaxFormCommonPart+"_description";
+    resetTranslationDescriptionValue = $(pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector).data("reset");
+    $(pitsTranslationHelperAjaxtranslationDescriptionJQuerySelector).val(resetTranslationDescriptionValue);
+  }
+}
+
+// For deleting the entire set of translation units
+function deleteSelectedTranslationUnitId(event,element) {
+  event.preventDefault();
+  // Initialize each variales
+  pitsTranslationHelperAjaxFormCommonPart = "";
+  pitsTranslationHelperAjaxFormSmallPart ="";
+  pitsTranslationHelperAjaxFormTranslationId = "";
+  pitsTranslationHelperAjaxtranslationIdJQuerySelector = "";
+  pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector ="";
+
+  $(".translationFileManipulationIndicator").html("");
+  pitsTranslationHelperAjaxFormSmallPart = element.attr("id");
+  pitsTranslationHelperAjaxFormSmallPart = pitsTranslationHelperAjaxFormSmallPart.split("_submit");
+  if( isset(pitsTranslationHelperAjaxFormSmallPart[0]) == true ) {
+    pitsTranslationHelperAjaxFormCommonPart = pitsTranslationHelperAjaxFormSmallPart[0];
+  }
+  if( pitsTranslationHelperAjaxFormCommonPart != "" ) {
+    pitsTranslationHelperAjaxtranslationIdJQuerySelector = "#"+pitsTranslationHelperAjaxFormCommonPart+"_translationId";
+    pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector = "#"+pitsTranslationHelperAjaxFormCommonPart+"_tableRow";
+    pitsTranslationHelperAjaxFormTranslationId = $(pitsTranslationHelperAjaxtranslationIdJQuerySelector).val();
+
+    $.ajax({
+      url: pitsTranslationHelperDeleteAjaxUrl,
+      type: "GET",
+      dataType: "json",
+      data: {
+        translationId: pitsTranslationHelperAjaxFormTranslationId,
+        csrfToken: pitstranslationManagerToken
+      },
+      success: function(result,status,xhr) {
+        // console.log(result);
+        // $(pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector).remove();
+        dataTableInstance.row($(pitsTranslationHelperAjaxFormTranslationUnitTableRowJQuerySelector)).remove().draw();
+        $('.translation_notifications').html(result.message);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+      },
+      error: function(xhr,status,error) {
+        $('.translation_notifications').html(error);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+
+      }
+    });
+  }
+}
+
+// Adding a new translation unit to set of translation files
+function addNewTranslationUnitToSetOfFiles(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  flag1 = 0;
+  addTranslationUnitTranslationUnitLabels = [];
+  addTranslationUnitTranslationUnitLanguages = [];
+  addTranslationUnitTranslationUnitLanguagesJQuerySelector = "";
+  addTranslationUnitTranslationUnitLabelJQuerySelector = "";
+  addTranslationUnitTranslationUnitCDATASections = [];
+  addTranslationUnitTranslationUnitCDATASectionsSelector = "";
+  addTranslationUnitTranslationUnitCDATASectionContent = 0;
+
+  addTranslationUnitTranslationUnitId = $("#pitTranslationHelper_add_translationUnit_translationId").val();
+  $('.translation_notifications').html("");
+  if( $.trim(addTranslationUnitTranslationUnitId) == "" ) {
+    $('.translation_notifications').html("Please add translation unit Id");
+    setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+    flag1 = 1;
+  } else {
+    translationUnitValidityCheckRegExp = /^[a-zA-Z]([a-zA-Z0-9_\.]*)[a-zA-Z0-9]$/i;
+    if( translationUnitValidityCheckRegExp.test(addTranslationUnitTranslationUnitId) == false ) {
+      $('.translation_notifications').html("Incorrect translation unit Id");
+      setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+      flag1 = 1;
+    }
+  }
+  if( pitstranslationManagerTotalLanguagesCount < 1 ) {
+    $('.translation_notifications').html("No active languages");
+    setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+    flag1 = 1;
+  } else {
+    for (translationLabelCount = 0; translationLabelCount < pitstranslationManagerTotalLanguagesCount; translationLabelCount++) {
+      addTranslationUnitTranslationUnitLabelJQuerySelector = "#"+"pitTranslationHelper_add_translationUnit_translationLabel_"+translationLabelCount;
+      addTranslationUnitTranslationUnitLabels[translationLabelCount] = $(addTranslationUnitTranslationUnitLabelJQuerySelector).val();
+      addTranslationUnitTranslationUnitLanguagesJQuerySelector = "#"+"pitTranslationHelper_add_translationUnit_translationLanguage_"+translationLabelCount;
+      addTranslationUnitTranslationUnitLanguages[translationLabelCount] = $(addTranslationUnitTranslationUnitLanguagesJQuerySelector).val();
+      addTranslationUnitTranslationUnitCDATASectionsSelector = "pitTranslationHelper_add_translationUnit_CDATASection_"+translationLabelCount;
+      addTranslationUnitTranslationUnitCDATASectionContent = 0;
+      if(document.getElementById(addTranslationUnitTranslationUnitCDATASectionsSelector).checked) {
+        addTranslationUnitTranslationUnitCDATASectionContent = 1;
+      }
+      addTranslationUnitTranslationUnitCDATASections[translationLabelCount] = addTranslationUnitTranslationUnitCDATASectionContent;
+    }
+  }
+  if ( flag1 == 0 ) {
+    $.ajax({
+      url: pitsTranslationHelperAddAjaxUrl,
+      type: "POST",
+      dataType: "json",
+      data: {
+        translationId: addTranslationUnitTranslationUnitId,
+        csrfToken: pitstranslationManagerToken,
+        translationUnitLabels: addTranslationUnitTranslationUnitLabels,
+        translationUnitLanguages: addTranslationUnitTranslationUnitLanguages,
+        translationUnitCDATASections: addTranslationUnitTranslationUnitCDATASections
+      },
+      success: function(result,status,xhr) {
+        if( result.status == "success") {
+          translationIdsSize = translationIdsSize+1;
+          pitsTranslatedTableRow = '<tr id="pitTranslationUnitDelete_'+translationIdsSize+'_tableRow"><td class="translate_key">'+addTranslationUnitTranslationUnitId+'</td>';
+          for (translationLabelCount = 0; translationLabelCount < pitstranslationManagerTotalLanguagesCount; translationLabelCount++) {
+            translationUnitLabel = addTranslationUnitTranslationUnitLabels[translationLabelCount];
+            addTranslationUnitTranslationUnitLanguage = addTranslationUnitTranslationUnitLanguages[translationLabelCount];
+            addTranslationUnitTranslationUnitCDATASection = addTranslationUnitTranslationUnitCDATASections[translationLabelCount];
+            pitsTranslatedTableRow = pitsTranslatedTableRow + getTranslationUnitCommonInputPart(translationIdsSize,translationLabelCount,translationUnitLabel,addTranslationUnitTranslationUnitId,addTranslationUnitTranslationUnitLanguage,addTranslationUnitTranslationUnitCDATASection);
+          }
+          pitsTranslatedTableRow = pitsTranslatedTableRow + getTranslationUnitDeleteTableColumnContent(translationIdsSize,addTranslationUnitTranslationUnitId);
+          pitsTranslatedTableRow = pitsTranslatedTableRow + '</tr>';
+          // $("#addTranslationUnitProcessRow").after(pitsTranslatedTableRow);
+          dataTableInstance.row.add($(pitsTranslatedTableRow)).draw().node();
+
+          //Resetting the data entered fields
+          $(".pitTranslationBlockResetTextArea").val("");
+          $(".pitTranslationBlockResetCheckBox").removeAttr("checked");
+        }
+        $('.translation_notifications').html(result.message);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+      },
+      error: function(xhr,status,error) {
+        $('.translation_notifications').html(error);
+        setTimeout(function(){ if ($('.translation_notifications').html().length>0)$('.translation_notifications').html('')}, 5000);
+
+      }
+    });
+  }
+}
+
+</script>
+
+</f:section>

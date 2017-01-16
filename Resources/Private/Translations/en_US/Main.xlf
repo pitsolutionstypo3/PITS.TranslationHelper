@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="" product-name="PITS.TranslationHelper" source-language="en_US" datatype="plaintext">
+    <body>
+      <trans-unit id="test.test" xml:space="preserve">
+        <target>Test EN_US</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

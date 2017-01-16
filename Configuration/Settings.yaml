@@ -1,0 +1,11 @@
+TYPO3:
+  Neos:
+    modules:
+      management:
+        submodules:
+          pitsTranslatorModule:
+            label: 'Translation Module'
+            controller: 'PITS\TranslationHelper\Controller\StandardController'
+            description: 'Backend Modules for site translation management'
+            icon: 'icon-comments'
+            privilegeTarget: 'PITS.TranslationHelper:StandardController'

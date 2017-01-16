@@ -1,0 +1,35 @@
+#                                                                        #
+# Routes configuration                                                   #
+#                                                                        #
+# This file contains the configuration for the MVC router.               #
+# Just add your own modifications as necessary.                          #
+#                                                                        #
+# Please refer to the Flow manual for possible configuration options.    #
+#                                                                        #
+
+
+##
+# Pits Translation Helper subroutes
+
+-
+  name: 'Translation unit manipulation'
+  uriPattern: 'pitstranslationManager/process'
+  defaults:
+    '@package': 'Pits.TranslationHelper'
+    '@controller': 'TranslationFileManipulator'
+    '@action': 'index'
+-
+  name: 'Translation unit removal'
+  uriPattern: 'pitstranslationManager/delete'
+  defaults:
+    '@package': 'Pits.TranslationHelper'
+    '@controller': 'TranslationFileManipulator'
+    '@action': 'deleteTransaltionUnit'
+-
+  name: 'Add Translation unit'
+  uriPattern: 'pitstranslationManager/add'
+  defaults:
+    '@package': 'Pits.TranslationHelper'
+    '@controller': 'TranslationFileManipulator'
+    '@action': 'addTransaltionUnit'
+  httpMethods: ['GET', 'POST']
