@@ -5,14 +5,14 @@ namespace PITS\TranslationHelper\Controller;
  * This file is part of the PITS.TranslationHelper package.
  */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
-class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\ActionController
+class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\ActionController
 {
     /**
      * @var string
      */
-    protected $defaultViewObjectName = 'TYPO3\Flow\Mvc\View\JsonView';
+    protected $defaultViewObjectName = 'Neos\Flow\Mvc\View\JsonView';
 
     /**
      * @Flow\Inject
@@ -28,7 +28,7 @@ class TranslationFileManipulatorController extends \TYPO3\Flow\Mvc\Controller\Ac
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\Flow\Security\Context
+     * @var \Neos\Flow\Security\Context
      */
     protected $securityContext;
 

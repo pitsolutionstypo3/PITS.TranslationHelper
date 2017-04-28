@@ -19,8 +19,8 @@
         "typo3/flow": "*"
     },
     "autoload": {
-        "psr-0": {
-            "PITS\\TranslationHelper": "Classes/"
+        "psr-4": {
+            "PITS\\TranslationHelper\\": "Classes"
         }
     },
     "extra": {
