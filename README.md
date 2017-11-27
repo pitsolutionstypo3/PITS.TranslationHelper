@@ -20,11 +20,11 @@ composer require pits/translationhelper
 ```
 -   Flush all caches using the below command
 ```
-php ./flow typo3.flow:cache:flush
+php ./flow neos.flow:cache:flush
 ```
 -   Warm up caches using the below command
 ```
-php ./flow typo3.flow:cache:warmup
+php ./flow neos.flow:cache:warmup
 ```
 -   Open your NEOS CMS site backend, then you can see **Translation Module** under **Management** main module.
 
@@ -55,9 +55,9 @@ composer remove pits/translationhelper
 ```
 -   Flush all caches using the below command
 ```
-php ./flow typo3.flow:cache:flush
+php ./flow neos.flow:cache:flush
 ```
 -   Warm up caches using the below command
 ```
-php ./flow typo3.flow:cache:warmup
+php ./flow neos.flow:cache:warmup
 ```
