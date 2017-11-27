@@ -6,7 +6,7 @@ namespace PITS\TranslationHelper\Domain\Service;
  *                                                                        *
  *                                                                        */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
 /**
  * @Flow\Scope("singleton")
@@ -16,19 +16,19 @@ class TranslationHelperCommonSevices
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\TYPO3CR\Domain\Service\ContentDimensionPresetSourceInterface
+     * @var \Neos\ContentRepository\Domain\Service\ContentDimensionPresetSourceInterface
      */
     protected $contentDimensionPresetSourceInterface;
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\Flow\Package\PackageManagerInterface
+     * @var \Neos\Flow\Package\PackageManagerInterface
      */
     protected $packageManager;
 
     /**
      * @Flow\Inject
-     * @var \TYPO3\Flow\I18n\Translator
+     * @var \Neos\Flow\I18n\Translator
      */
     protected $translator;
 
@@ -136,7 +136,7 @@ class TranslationHelperCommonSevices
     ) {
         $module           = $this->getPrefixFileName();
         $packageKey       = $this->translationManagementSession->getTranslationPackageKey();
-        $locale           = new \TYPO3\Flow\I18n\Locale($localeIdentifier);
+        $locale           = new \Neos\Flow\I18n\Locale($localeIdentifier);
         $translationLabel = $this->translator->translateById($translationId, [], null, $locale, trim($module), trim($packageKey));
         return $translationLabel;
     }
@@ -148,7 +148,7 @@ class TranslationHelperCommonSevices
      */
     public function getDataSavedSuccessfullyMsg($localeIdentifier = 'en')
     {
-        $locale                 = new \TYPO3\Flow\I18n\Locale($localeIdentifier);
+        $locale                 = new \Neos\Flow\I18n\Locale($localeIdentifier);
         $validationErrorMessage = $this->translator->translateById("dataWasSavedSuccessfully", [], null, $locale, "Main", "PITS.TranslationHelper");
         return $validationErrorMessage;
     }
@@ -160,7 +160,7 @@ class TranslationHelperCommonSevices
      */
     public function getDataDeletedSuccessfullyMsg($localeIdentifier = 'en')
     {
-        $locale                 = new \TYPO3\Flow\I18n\Locale($localeIdentifier);
+        $locale                 = new \Neos\Flow\I18n\Locale($localeIdentifier);
         $validationErrorMessage = $this->translator->translateById("dataWasDeletedSuccessfully", [], null, $locale, "Main", "PITS.TranslationHelper");
         return $validationErrorMessage;
     }
@@ -218,7 +218,7 @@ class TranslationHelperCommonSevices
                 \clearstatcache();
             }
         } catch (\Exception $e) {
-          // \TYPO3\Flow\var_dump($e->getMessage());
+          // \Neos\Flow\var_dump($e->getMessage());
           // exit;
           $availableLanguages = array();
         }
@@ -256,7 +256,7 @@ class TranslationHelperCommonSevices
             }
             \clearstatcache();
         } catch (\Exception $e) {
-            // \TYPO3\Flow\var_dump($e->getMessage());
+            // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
 
@@ -314,7 +314,7 @@ class TranslationHelperCommonSevices
             }
             \clearstatcache();
         } catch (\Exception $e) {
-            // \TYPO3\Flow\var_dump($e->getMessage());
+            // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
     }
@@ -338,7 +338,7 @@ class TranslationHelperCommonSevices
             }
 
         } catch (\Exception $e) {
-            // \TYPO3\Flow\var_dump($e->getMessage());
+            // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
 
@@ -360,7 +360,7 @@ class TranslationHelperCommonSevices
             }
             $uniqueTranslationIds = array_unique($uniqueTranslationIds);
         } catch (\Exception $e) {
-            // \TYPO3\Flow\var_dump($e->getMessage());
+            // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
         return $uniqueTranslationIds;
@@ -424,7 +424,7 @@ class TranslationHelperCommonSevices
             }
 
         } catch (\Exception $e) {
-            // \TYPO3\Flow\var_dump($e->getMessage());
+            // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
 

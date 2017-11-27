@@ -5,9 +5,9 @@ namespace PITS\TranslationHelper\Domain\ViewHelper;
  * This file is part of the Pits.Newsletter package.
  */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
-class CDATAContentCheckerViewHelper extends \TYPO3\Fluid\Core\ViewHelper\AbstractViewHelper
+class CDATAContentCheckerViewHelper extends \Neos\FluidAdaptor\Core\ViewHelper\AbstractViewHelper
 {
 
     /**
