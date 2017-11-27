@@ -5,7 +5,7 @@ namespace PITS\TranslationHelper\Domain\Session;
  * This file is part of the Pits.Newsletter package.
  */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
 /**
  * @Flow\Scope("session")

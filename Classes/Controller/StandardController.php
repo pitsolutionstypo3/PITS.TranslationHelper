@@ -5,9 +5,9 @@ namespace PITS\TranslationHelper\Controller;
  * This file is part of the PITS.TranslationHelper package.
  */
 
-use TYPO3\Flow\Annotations as Flow;
+use Neos\Flow\Annotations as Flow;
 
-class StandardController extends \TYPO3\Flow\Mvc\Controller\ActionController
+class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
 {
 
     /**
@@ -34,10 +34,10 @@ class StandardController extends \TYPO3\Flow\Mvc\Controller\ActionController
     protected $parentFolderName = "";
 
     /**
-     * @param \TYPO3\Flow\Mvc\View\ViewInterface $view
+     * @param \Neos\Flow\Mvc\View\ViewInterface $view
      * @return void
      */
-    public function initializeView(\TYPO3\Flow\Mvc\View\ViewInterface $view)
+    public function initializeView(\Neos\Flow\Mvc\View\ViewInterface $view)
     {
         $this->localeIdentifier = $this->translationHelperCommonSevices->getLocaleIdentifier();
         $this->view->assignMultiple(array(
