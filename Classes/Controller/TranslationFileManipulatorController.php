@@ -16,9 +16,9 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
 
     /**
      * @Flow\Inject
-     * @var \PITS\TranslationHelper\Domain\Service\TranslationHelperCommonSevices
+     * @var \PITS\TranslationHelper\Domain\Service\CommonSevices
      */
-    protected $translationHelperCommonSevices;
+    protected $commonSevices;
 
     /**
      * @Flow\Inject
@@ -56,9 +56,9 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
         $errorMsg = array();
         try {
 
-            $availableSiteLanguages   = $this->translationHelperCommonSevices->getCurrentActiveSiteLanguages();
+            $availableSiteLanguages   = $this->commonSevices->getCurrentActiveSiteLanguages();
             $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
-            $translationsResourcePath = $this->translationHelperCommonSevices->getFlowPackageResourceTranslationPath($packageKey);
+            $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
             $translationFile          = $this->translationManagementSession->getTranslationFile();
             $translationFileFullPath  = trim($translationsResourcePath) . trim($translationLanguage) . "/" . trim($translationFile);
             if (empty($availableSiteLanguages) == true) {
@@ -84,7 +84,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     $errorMsg[] = "translation file does not exist.";
                     $flag       = 1;
                 } else {
-                  $translationUnitCommonValidationResult = $this->translationHelperCommonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationLanguage, $translationUnitEncodingDecisionChecker);
+                  $translationUnitCommonValidationResult = $this->commonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationLanguage, $translationUnitEncodingDecisionChecker);
                   if( empty($translationUnitCommonValidationResult) == false ) {
                     $errorMsg[] = trim($translationUnitCommonValidationResult);
                     $flag       = 1;
@@ -98,7 +98,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     "message" => implode(",", $errorMsg),
                 );
             } else {
-                $output = $this->translationHelperCommonSevices->performCURDOpertionsOnTranslationFiles($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
+                $output = $this->commonSevices->performCURDOpertionsOnTranslationFiles($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
             }
 
         } catch (\Exception $e) {
@@ -139,9 +139,9 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     "message" => implode(",", $errorMsg),
                 );
             } else {
-                $availableSiteLanguages   = $this->translationHelperCommonSevices->getCurrentActiveSiteLanguages();
+                $availableSiteLanguages   = $this->commonSevices->getCurrentActiveSiteLanguages();
                 $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
-                $translationsResourcePath = $this->translationHelperCommonSevices->getFlowPackageResourceTranslationPath($packageKey);
+                $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
                 $translationFile          = $this->translationManagementSession->getTranslationFile();
 
                 if (empty($availableSiteLanguages) == false) {
@@ -149,7 +149,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     foreach ($availableSiteLanguages as $translationLanguage) {
                         $translationFileFullPath = trim($translationsResourcePath) . trim($translationLanguage) . "/" . trim($translationFile);
                         if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                            $transUnitRemovalResult = $this->translationHelperCommonSevices->removeTranslationUnitFromCurrentTranslationFile($translationFileFullPath, $translationId);
+                            $transUnitRemovalResult = $this->commonSevices->removeTranslationUnitFromCurrentTranslationFile($translationFileFullPath, $translationId);
                             if ($transUnitRemovalResult == false) {
                                 $transUnitRemovalFlag = 1;
                             }
@@ -159,7 +159,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     if ($transUnitRemovalFlag == 0) {
                         $output = array(
                             "status"  => "success",
-                            "message" => $this->translationHelperCommonSevices->getDataSavedSuccessfullyMsg("en"),
+                            "message" => $this->commonSevices->getDataSavedSuccessfullyMsg("en"),
                         );
                     } else {
                         $output = array(
@@ -205,7 +205,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
         $errorMsg = array();
         try {
             $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
-            $translationsResourcePath = $this->translationHelperCommonSevices->getFlowPackageResourceTranslationPath($packageKey);
+            $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
             $translationFile          = $this->translationManagementSession->getTranslationFile();
             $duplicateTranslationId   = 0;
 
@@ -221,7 +221,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     foreach ($translationUnitLanguages as $translationUnitLanguage) {
                         $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
                         if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                            $duplicateTranslationUnit = $this->translationHelperCommonSevices->checkGivenTranslationIdExists($translationFileFullPath, $translationId);
+                            $duplicateTranslationUnit = $this->commonSevices->checkGivenTranslationIdExists($translationFileFullPath, $translationId);
                             if (empty($duplicateTranslationUnit) == false) {
                                 $duplicateTranslationId = 1;
                             }
@@ -246,7 +246,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                               if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
                                   $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
                               }
-                              $translationUnitCommonValidationResult = $this->translationHelperCommonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage, $translationUnitEncodingDecisionChecker);
+                              $translationUnitCommonValidationResult = $this->commonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage, $translationUnitEncodingDecisionChecker);
                               if( empty($translationUnitCommonValidationResult) == false ) {
                                 $errorMsg[] = trim($translationUnitCommonValidationResult);
                                 $flag       = 1;
@@ -277,14 +277,14 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                         if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
                             $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
                         }
-                        $translationUnitAdditionSuccess = $this->translationHelperCommonSevices->addNewTranslationUnitToCurrentTranslationFile($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
+                        $translationUnitAdditionSuccess = $this->commonSevices->addNewTranslationUnitToCurrentTranslationFile($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
                     }
                 }
 
                 if ($translationUnitAdditionSuccess == true) {
                     $output = array(
                         "status"  => "success",
-                        "message" => $this->translationHelperCommonSevices->getDataSavedSuccessfullyMsg("en"),
+                        "message" => $this->commonSevices->getDataSavedSuccessfullyMsg("en"),
                     );
                 } else {
                     $output = array(
