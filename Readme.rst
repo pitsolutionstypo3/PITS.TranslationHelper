@@ -61,8 +61,7 @@ uninstall step
     composer remove pits/translationhelper
 
 - remove completely below mentioned route configuration code from Configuration/Routes.yaml file.
-
-   ::
+  ::
 
     -
 	  name: 'pitsTranslationHelper'
@@ -73,6 +72,7 @@ uninstall step
 	  subRoutes:
 		'pitsTranslationHelperSubroutes':
 		  package: 'PITS.TranslationHelper'
+		  
 
 - Flush all caches using the below command
   ::
