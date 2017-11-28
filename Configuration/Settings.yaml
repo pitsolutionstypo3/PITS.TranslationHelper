@@ -9,3 +9,8 @@ Neos:
             description: 'Backend Modules for site translation management'
             icon: 'icon-comments'
             privilegeTarget: 'PITS.TranslationHelper:StandardController'
+  Flow:
+    mvc:
+      routes:
+        PITS.TranslationHelper:
+          position: 'before Neos.Neos'
