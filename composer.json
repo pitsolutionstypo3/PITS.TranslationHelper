@@ -16,11 +16,11 @@
       }
     ],
     "require": {
-        "typo3/flow": "*"
+        "neos/flow": "*"
     },
     "autoload": {
         "psr-4": {
-            "PITS\\TranslationHelper\\": "Classes"
+            "PITS\\TranslationHelper\\": "Classes/"
         }
     },
     "extra": {

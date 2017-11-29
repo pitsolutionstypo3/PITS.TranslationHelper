@@ -2,7 +2,7 @@
 namespace PITS\TranslationHelper\Domain\Session;
 
 /*
- * This file is part of the Pits.Newsletter package.
+ * This file is part of the Pits.TranslationHelper package.
  */
 
 use Neos\Flow\Annotations as Flow;

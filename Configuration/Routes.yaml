@@ -15,21 +15,21 @@
   name: 'Translation unit manipulation'
   uriPattern: 'pitstranslationManager/process'
   defaults:
-    '@package': 'Pits.TranslationHelper'
+    '@package': 'PITS.TranslationHelper'
     '@controller': 'TranslationFileManipulator'
     '@action': 'index'
 -
   name: 'Translation unit removal'
   uriPattern: 'pitstranslationManager/delete'
   defaults:
-    '@package': 'Pits.TranslationHelper'
+    '@package': 'PITS.TranslationHelper'
     '@controller': 'TranslationFileManipulator'
     '@action': 'deleteTransaltionUnit'
 -
   name: 'Add Translation unit'
   uriPattern: 'pitstranslationManager/add'
   defaults:
-    '@package': 'Pits.TranslationHelper'
+    '@package': 'PITS.TranslationHelper'
     '@controller': 'TranslationFileManipulator'
     '@action': 'addTransaltionUnit'
   httpMethods: ['GET', 'POST']

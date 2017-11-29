@@ -11,7 +11,7 @@ use Neos\Flow\Annotations as Flow;
 /**
  * @Flow\Scope("singleton")
  */
-class TranslationHelperCommonSevices
+class CommonSevices
 {
 
     /**
