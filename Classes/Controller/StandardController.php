@@ -58,7 +58,7 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
         $this->session->setTranslationPackageKey("");
         $this->session->setTranslationFile("");
 
-        $activePackages     = array();
+        $activePackages     = [];
         $activePackagesSize = 0;
 
         $translatedLanguages = $this->commonSevices->getCurrentActiveSiteLanguages();
@@ -66,11 +66,11 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
             $activePackages     = $this->commonSevices->getActivePackagesForTranslation();
             $activePackagesSize = sizeof($activePackages);
         }
-        $this->view->assignMultiple(array(
+        $this->view->assignMultiple([
             "activePackages"          => $activePackages,
             "activePackagesSize"      => $activePackagesSize,
             "translatedLanguagesSize" => sizeof($translatedLanguages),
-        ));
+        ]);
     }
 
     /**
@@ -121,11 +121,11 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
         $packageKey                  = $this->session->getTranslationPackageKey();
         $packageTranslationFiles     = $this->commonSevices->getAllTranslationFilesList($this->parentFolderName);
         $packageTranslationFilesSize = sizeof($packageTranslationFiles);
-        $this->view->assignMultiple(array(
+        $this->view->assignMultiple([
             "packageKey"                  => $packageKey,
             "packageTranslationFiles"     => $packageTranslationFiles,
             "packageTranslationFilesSize" => $packageTranslationFilesSize,
-        ));
+        ]);
     }
 
     /**
@@ -145,7 +145,7 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
         $translationFileName = $this->session->getTranslationFile();
         $packageKey          = $this->session->getTranslationPackageKey();
         $translationSource   = $this->commonSevices->getPrefixFileName();
-        $this->view->assignMultiple(array(
+        $this->view->assignMultiple([
             "translationFileName"     => $translationFileName,
             "translationIds"          => $translationIds,
             "translationIdsSize"      => $translationIdsSize,
@@ -153,6 +153,6 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
             "translatedLanguagesSize" => sizeof($translatedLanguages),
             "packageKey"              => $packageKey,
             "translationSource"       => $translationSource,
-        ));
+        ]);
     }
 }

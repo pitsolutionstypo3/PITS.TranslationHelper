@@ -437,30 +437,27 @@ class CommonSevices
 
     /**
      * This function is used for performing ADD, REMOVE operations in the translation file.
-     * @param string $translationFile
-     * @param string $translationId
-     * @param string $translationLabel
-     * @param integer $translationCDATAContentChecker
-     * @param integer $translationUnitEncodingDecisionChecker
+     *
+     * @param string $filePath Translation File
+     * @param string $id Translation Id
+     * @param string $label Translation Label
+     * @param integer $cdataChecker Translation CDATA Content Checker
+     * @param integer $encodingChecker Translation Unit Encoding Decision Checker
+     *
      * @return mixed
      */
-    public function performCURDOpertionsOnTranslationFiles(
-        $translationFile = "",
-        $translationId = "",
-        $translationLabel = "",
-        $translationCDATAContentChecker = 0,
-        $translationUnitEncodingDecisionChecker = 0
-    ) {
+    public function performOpertions($filePath = "", $id = "", $label = "", $cdataChecker = 0, $encodingChecker = 0)
+    {
         try {
             $output = array(
                 "status"  => "success",
                 "message" => $this->getDataSavedSuccessfullyMsg("en"),
             );
 
-            if ((empty($translationFile) == false) && (is_file($translationFile) == true) && (file_exists($translationFile) == true)) {
-                $translationIdInstance = $this->checkGivenTranslationIdExists($translationFile, $translationId);
+            if ((empty($filePath) == false) && (is_file($filePath) == true) && (file_exists($filePath) == true)) {
+                $translationIdInstance = $this->checkGivenTranslationIdExists($filePath, $id);
                 if (empty($translationIdInstance) == true) {
-                    $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
+                    $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($filePath, $id, $label, $cdataChecker, $encodingChecker);
                     if ($addNewTranslationUnitResult == false) {
                         $output = array(
                             "status"  => "error",
@@ -468,14 +465,14 @@ class CommonSevices
                         );
                     }
                 } else {
-                    $removeTranslationUnitResult = $this->removeTranslationUnitFromCurrentTranslationFile($translationFile, $translationId);
+                    $removeTranslationUnitResult = $this->removeTranslationUnitFromCurrentTranslationFile($filePath, $id);
                     if ($removeTranslationUnitResult == false) {
                         $output = array(
                             "status"  => "error",
                             "message" => "Cannot remove selected translation unit",
                         );
                     } else {
-                        $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
+                        $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($filePath, $id, $label, $cdataChecker, $encodingChecker);
                         if ($addNewTranslationUnitResult == false) {
                             $output = array(
                                 "status"  => "error",
@@ -491,6 +488,7 @@ class CommonSevices
                 "message" => $e->getMessage(),
             );
         }
+        
         return $output;
     }
 

@@ -55,7 +55,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                 "message" => $isValid,
             ];
         } else {
-            $output = $this->commonSevices->performCURDOpertionsOnTranslationFiles($filePath, $id, $label, $cdataChecker, $encodingChecker);
+            $output = $this->commonSevices->performOpertions($filePath, $id, $label, $cdataChecker, $encodingChecker);
         }
 
         $this->view->assign('value', $output);
