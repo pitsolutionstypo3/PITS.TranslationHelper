@@ -24,7 +24,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      * @Flow\Inject
      * @var \PITS\TranslationHelper\Domain\Session\TranslationManagement
      */
-    protected $translationManagementSession;
+    protected $session;
 
     /**
      * @Flow\Inject
@@ -33,88 +33,41 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
     protected $securityContext;
 
     /**
-     * This function receives the Ajax request and process this request. Based on the request, it performs the add, delete, and update operations on the translation file.
-     * @param string $translationId
-     * @param string $translationLabel
-     * @param string $translationLanguage
-     * @param string $translationCDATAContentChecker
-     * @param string $translationUnitEncodingDecisionChecker
+     * This function receives the Ajax request and process this request.
+     * Based on the request, it performs the add, delete, and update operations on the translation file.
+     *
+     * @param string $id Translation Id
+     * @param string $label Translation Label
+     * @param string $language TranslationLanguage
+     * @param int $cdataChecker Translation CDATA Content Checker
+     * @param int $encodingChecker Translation Unit Encoding Decision Checker
+     *
      * @return void
      */
-    public function indexAction(
-        $translationId = "",
-        $translationLabel = "",
-        $translationLanguage = "",
-        $translationCDATAContentChecker = 0,
-        $translationUnitEncodingDecisionChecker = 0
-    ) {
-        $output = array(
-            "status"  => "error",
-            "message" => "Invalid Inputs.",
-        );
-        $flag     = 0;
-        $errorMsg = array();
-        try {
-
-            $availableSiteLanguages   = $this->commonSevices->getCurrentActiveSiteLanguages();
-            $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
-            $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
-            $translationFile          = $this->translationManagementSession->getTranslationFile();
-            $translationFileFullPath  = trim($translationsResourcePath) . trim($translationLanguage) . "/" . trim($translationFile);
-            if (empty($availableSiteLanguages) == true) {
-                $errorMsg[] = "No Available languages.";
-                $flag       = 1;
-            } else {
-                $translationLanguage = filter_var($translationLanguage, FILTER_SANITIZE_STRING);
-                if (empty($translationLanguage) == true) {
-                    $errorMsg[] = "Invalid Language Input.";
-                    $flag       = 1;
-                } else {
-                    if (in_array(trim($translationLanguage), $availableSiteLanguages) == false) {
-                        $errorMsg[] = "Given Language is not used in this site.";
-                        $flag       = 1;
-                    }
-                }
-            }
-            if (is_file($translationFileFullPath) == false) {
-                $errorMsg[] = "Incorrect translation file full path.";
-                $flag       = 1;
-            } else {
-                if (file_exists($translationFileFullPath) == false) {
-                    $errorMsg[] = "translation file does not exist.";
-                    $flag       = 1;
-                } else {
-                  $translationUnitCommonValidationResult = $this->commonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationLanguage, $translationUnitEncodingDecisionChecker);
-                  if( empty($translationUnitCommonValidationResult) == false ) {
-                    $errorMsg[] = trim($translationUnitCommonValidationResult);
-                    $flag       = 1;
-                  }
-                }
-            }
-
-            if ($flag == 1) {
-                $output = array(
-                    "status"  => "error",
-                    "message" => implode(",", $errorMsg),
-                );
-            } else {
-                $output = $this->commonSevices->performCURDOpertionsOnTranslationFiles($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
-            }
-
-        } catch (\Exception $e) {
-            $output = array(
+    public function indexAction($id = "", $label = "", $language = '', $cdataChecker = 0, $encodingChecker = 0)
+    {
+        $isValid = $this->commonSevices->validateTranslationLabel($label, $cdataChecker, $language, $encodingChecker);
+        $filePath      = $this->commonSevices->getTranslationFileFullPath($language);
+        
+        if ($isValid) {
+            $output = [
                 "status"  => "error",
-                "message" => $e->getMessage(),
-            );
+                "message" => $isValid,
+            ];
+        } else {
+            $output = $this->commonSevices->performCURDOpertionsOnTranslationFiles($filePath, $id, $label, $cdataChecker, $encodingChecker);
         }
 
         $this->view->assign('value', $output);
     }
-
+        
     /**
-     * This function receives the Ajax request and process this request. Based on the request, it removes the requested translation unit from the translation file.
+     * This function receives the Ajax request and process this request.
+     * Based on the request, it removes the requested translation unit from the translation file.
+     *
      * @param string $translationId
      * @param string $csrfToken
+     *
      * @return void
      */
     public function deleteTransaltionUnitAction(
@@ -140,9 +93,9 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                 );
             } else {
                 $availableSiteLanguages   = $this->commonSevices->getCurrentActiveSiteLanguages();
-                $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
+                $packageKey               = $this->session->getTranslationPackageKey();
                 $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
-                $translationFile          = $this->translationManagementSession->getTranslationFile();
+                $translationFile          = $this->session->getTranslationFile();
 
                 if (empty($availableSiteLanguages) == false) {
                     $transUnitRemovalFlag = 0;
@@ -169,7 +122,6 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     }
                 }
             }
-
         } catch (\Exception $e) {
             $output = array(
                 "status"  => "error",
@@ -180,13 +132,16 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
     }
 
     /**
-     * This function receives the Ajax request and process this request. Based on the request, it adds translation unit to the translation file.
+     * This function receives the Ajax request and process this request.
+     * Based on the request, it adds translation unit to the translation file.
+     *
      * @param string $translationId
      * @param string $csrfToken
      * @param array $translationUnitLabels
      * @param array $translationUnitLanguages
      * @param array $translationUnitCDATASections
      * @param array $translationUnitEncodingDecisions
+     *
      * @return void
      */
     public function addTransaltionUnitAction(
@@ -204,9 +159,9 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
         $flag     = 0;
         $errorMsg = array();
         try {
-            $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
+            $packageKey               = $this->session->getTranslationPackageKey();
             $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
-            $translationFile          = $this->translationManagementSession->getTranslationFile();
+            $translationFile          = $this->session->getTranslationFile();
             $duplicateTranslationId   = 0;
 
             if (empty($translationUnitLanguages) == true) {
@@ -231,28 +186,28 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                         $errorMsg[] = "Duplicate translation unit.";
                         $flag       = 1;
                     } else {
-                      foreach ($translationUnitLanguages as $translationUnitLanguagekey => $translationUnitLanguage) {
-                          $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
-                          if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                              $translationLabel               = "";
-                              $translationCDATAContentChecker = 0;
-                              $translationUnitEncodingDecisionChecker = 0;
-                              if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
-                                  $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
-                              }
-                              if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
-                                  $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
-                              }
-                              if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
-                                  $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
-                              }
-                              $translationUnitCommonValidationResult = $this->commonSevices->performCommonTranslationLabelValidation($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage, $translationUnitEncodingDecisionChecker);
-                              if( empty($translationUnitCommonValidationResult) == false ) {
-                                $errorMsg[] = trim($translationUnitCommonValidationResult);
-                                $flag       = 1;
-                              }
-                          }
-                      }
+                        foreach ($translationUnitLanguages as $translationUnitLanguagekey => $translationUnitLanguage) {
+                            $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
+                            if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
+                                $translationLabel               = "";
+                                $translationCDATAContentChecker = 0;
+                                $translationUnitEncodingDecisionChecker = 0;
+                                if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
+                                    $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
+                                }
+                                if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
+                                    $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
+                                }
+                                if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
+                                    $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
+                                }
+                                $translationUnitCommonValidationResult = $this->commonSevices->validateTranslationLabel($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage, $translationUnitEncodingDecisionChecker);
+                                if (empty($translationUnitCommonValidationResult) == false) {
+                                    $errorMsg[] = trim($translationUnitCommonValidationResult);
+                                    $flag       = 1;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -292,9 +247,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                         "message" => "Some problem in translation unit addition process",
                     );
                 }
-
             }
-
         } catch (\Exception $e) {
             $output = array(
                 "status"  => "error",

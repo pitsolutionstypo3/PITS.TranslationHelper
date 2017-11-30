@@ -3,8 +3,8 @@
   <file original="" product-name="PITS.TranslationHelper" source-language="en" datatype="plaintext">
     <body>
       <trans-unit id="deactive" xml:space="preserve">
-				<source>Deactive</source>
-			</trans-unit>
+            <source>Deactive</source>
+      </trans-unit>
       <trans-unit id="noDatas" xml:space="preserve">
 				<source>No Datas</source>
 			</trans-unit>
@@ -697,6 +697,15 @@
       </trans-unit>
       <trans-unit id="test.test" xml:space="preserve">
         <target>Test</target>
+      </trans-unit>
+      <trans-unit id="invalidLanguageLabel" xml:space="preserve">
+        <target>Invalid language {language} translation Label.Only allow english letters, numbers,dot,and whitespace.</target>
+      </trans-unit>
+      <trans-unit id="invalidLanguage" xml:space="preserve">
+        <target>Given Language is not used in this site.</target>
+      </trans-unit>
+      <trans-unit id="transFileNotExist" xml:space="preserve">
+        <target>translation file does not exist.</target>
       </trans-unit>
     </body>
   </file>

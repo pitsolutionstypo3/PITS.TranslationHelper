@@ -66,7 +66,6 @@ class CommonSevices
             }
         }
         return $curentLanguage;
-
     }
 
     /**
@@ -76,7 +75,7 @@ class CommonSevices
     public function getCurrentActiveSiteLanguages()
     {
         $contentDimensionPresetsConfigurations = $this->contentDimensionPresetSourceInterface->getAllPresets();
-        $languageIdentifiers                   = array();
+        $languageIdentifiers                   = [];
         if (isset($contentDimensionPresetsConfigurations["language"]["presets"]) == true) {
             $languagePresets = $contentDimensionPresetsConfigurations["language"]["presets"];
             if ((empty($languagePresets) == false) && (is_array($languagePresets) == true)) {
@@ -218,9 +217,9 @@ class CommonSevices
                 \clearstatcache();
             }
         } catch (\Exception $e) {
-          // \Neos\Flow\var_dump($e->getMessage());
-          // exit;
-          $availableLanguages = array();
+            // \Neos\Flow\var_dump($e->getMessage());
+            // exit;
+            $availableLanguages = array();
         }
         return $availableLanguages;
     }
@@ -259,7 +258,6 @@ class CommonSevices
             // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
-
     }
 
     /**
@@ -277,7 +275,6 @@ class CommonSevices
         $availableTranslationFile                 = "";
         $this->currentlyAvailableTranslationFiles = array();
         try {
-
             if (sizeof($translatedLanguages) > 0) {
                 foreach ($translatedLanguages as $translatedLanguage) {
                     //Getting correct directory path
@@ -304,13 +301,11 @@ class CommonSevices
                         if ((file_exists(trim($translationFilePath)) == true) && (is_file(trim($translationFilePath)) == true)) {
                             $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
                         }
-                    } else if (filesize($translationFilePath) <= 0) {
+                    } elseif (filesize($translationFilePath) <= 0) {
                         $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
                     }
                     $this->currentlyAvailableTranslationFiles[] = trim($translationFilePath);
-
                 }
-
             }
             \clearstatcache();
         } catch (\Exception $e) {
@@ -336,12 +331,10 @@ class CommonSevices
                 \file_put_contents($translationFilePath, $emptyTranslationFileTemplate);
                 \clearstatcache();
             }
-
         } catch (\Exception $e) {
             // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
-
     }
 
     /**
@@ -352,7 +345,6 @@ class CommonSevices
     {
         $uniqueTranslationIds = array();
         try {
-
             if (empty($this->currentlyAvailableTranslationFiles) == false) {
                 foreach ($this->currentlyAvailableTranslationFiles as $currentlyAvailableTranslationFile) {
                     $this->getTranslationIdsFromTranslationFile($currentlyAvailableTranslationFile, $uniqueTranslationIds);
@@ -376,11 +368,9 @@ class CommonSevices
     ) {
         $uniqueTranslationIds = array();
         try {
-
             if ((empty($translationFile) == false) && (is_file($translationFile) == true) && (file_exists($translationFile) == true)) {
                 $this->getTranslationIdsFromTranslationFile($translationFile, $uniqueTranslationIds);
             }
-
         } catch (\Exception $e) {
             unset($uniqueTranslationIds);
         }
@@ -406,7 +396,7 @@ class CommonSevices
                     $translationXMLPointer->preserveWhiteSpace = false;
                     $translationXMLPointer->formatOutput       = true;
                     $translationXMLPointer->encoding= "UTF-8";
-                    $translationXMLPointer->resolveExternals= TRUE;
+                    $translationXMLPointer->resolveExternals= true;
 
                     $translationXMLPointer->load($translationFile, LIBXML_NOENT);
 
@@ -422,12 +412,10 @@ class CommonSevices
                     $translationXMLPointer = null;
                 }
             }
-
         } catch (\Exception $e) {
             // \Neos\Flow\var_dump($e->getMessage());
             // exit;
         }
-
     }
 
     /**
@@ -470,7 +458,6 @@ class CommonSevices
             );
 
             if ((empty($translationFile) == false) && (is_file($translationFile) == true) && (file_exists($translationFile) == true)) {
-
                 $translationIdInstance = $this->checkGivenTranslationIdExists($translationFile, $translationId);
                 if (empty($translationIdInstance) == true) {
                     $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($translationFile, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
@@ -497,9 +484,7 @@ class CommonSevices
                         }
                     }
                 }
-
             }
-
         } catch (\Exception $e) {
             $output = array(
                 "status"  => "error",
@@ -527,7 +512,7 @@ class CommonSevices
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
             $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= TRUE;
+            $domXmlPointer->resolveExternals= true;
 
             $domXmlPointer->load($translationFile, LIBXML_NOENT);
 
@@ -553,7 +538,6 @@ class CommonSevices
             }
             $domXmlPointer = null;
         } catch (\Exception $e) {
-
         }
         return $translationUnitIdRecord;
     }
@@ -582,7 +566,7 @@ class CommonSevices
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
             $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= TRUE;
+            $domXmlPointer->resolveExternals= true;
 
             $domXmlPointer->load($translationFile, LIBXML_NOENT);
 
@@ -597,8 +581,8 @@ class CommonSevices
                 $newTransUnitElement->setAttribute("id", trim($translationId));
                 $newTransUnitElement->setAttribute("xml:space", "preserve");
 
-                if( $translationUnitEncodingDecisionChecker == 1) {
-                  $translationLabel = htmlentities($translationLabel,ENT_QUOTES,"UTF-8");
+                if ($translationUnitEncodingDecisionChecker == 1) {
+                    $translationLabel = htmlentities($translationLabel, ENT_QUOTES, "UTF-8");
                 }
 
                 // Check whether the given translation label is CDATA or not
@@ -618,7 +602,7 @@ class CommonSevices
             }
             $domXmlPointer = null;
         } catch (\Exception $e) {
-          $output = false;
+            $output = false;
         }
         return $output;
     }
@@ -641,7 +625,7 @@ class CommonSevices
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
             $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= TRUE;
+            $domXmlPointer->resolveExternals= true;
 
             $domXmlPointer->load($translationFile, LIBXML_NOENT);
 
@@ -691,13 +675,12 @@ class CommonSevices
         $bodyTagElement          = null;
         $translationUnitIdRecord = null;
         try {
-
             $domXmlPointer = new \DOMDocument("1.0");
             // let's have a nice output
             $domXmlPointer->preserveWhiteSpace = false;
             $domXmlPointer->formatOutput       = true;
             $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= TRUE;
+            $domXmlPointer->resolveExternals= true;
 
             $domXmlPointer->load($translationFileFullPath, LIBXML_NOENT);
 
@@ -734,7 +717,6 @@ class CommonSevices
                 $domXmlPointer->save($translationFileFullPath);
             }
             $domXmlPointer = null;
-
         } catch (Exception $e) {
             $output = 0;
         }
@@ -742,40 +724,60 @@ class CommonSevices
     }
 
     /**
-    * @param string $translationLabel
-    * @param integer $translationCDATAContentChecker
-    * @param string $translationUnitLanguagekey
-    * @param integer $translationUnitEncodingDecision
+    * This function performs validation of translation label
+    *
+    * @param string $label Translation Label
+    * @param integer $cdataChecker Translation CDATA Content Checker
+    * @param string $language Translation Unit Language key
+    * @param integer $encodingChecker Translation Unit Encoding Decision
+    *
     * @return mixed
     */
-    public function performCommonTranslationLabelValidation(
-    $translationLabel = "",
-    $translationCDATAContentChecker = 0,
-    $translationUnitLanguagekey = "",
-    $translationUnitEncodingDecision = 0
-    ) {
-      $flag     = 0;
-      $errorMsg = array();
-
-      if( ( $translationCDATAContentChecker == 0 ) || ( $translationUnitEncodingDecision == 0 ) ) {
-        if( preg_match("/[a-zA-Z0-9\s\.]*/i", $translationLabel,$translationLabelRegExpCheckerWithoutCDATAMatches) != 1) {
-          $errorMsg[] = "Invalid language (".trim($translationUnitLanguagekey).") translation Label.Only allow english letters, numbers,dot,and whitespace.";
-          $flag = 1;
+    public function validateTranslationLabel($label = '', $cdataChecker = 0, $language = '', $encodingChecker = 0)
+    {
+        $regExp        = "/[a-zA-Z0-9\s\.]*/i";
+        $languages     = $this->getCurrentActiveSiteLanguages();
+        $filePath      = $this->getTranslationFileFullPath($language);
+                       
+        if (empty($languages)|| !in_array(trim($language), $languages)) {
+            return $this->getTransaltionMessage('invalidLanguage');
+        } elseif (!is_file($filePath) || !file_exists($filePath)) {
+            return $this->getTransaltionMessage('transFileNotExist');
+        } elseif (!$cdataChecker || !$encodingChecker || !empty($label) || !preg_match($regExp, $label)) {
+            return $this->getTransaltionMessage('invalidLanguageLabel', ['language' => $language]);
         }
-        else {
-          if( ( ctype_alnum($translationLabel) == false ) && ( empty($translationLabel) == false ) ) {
-            $errorMsg[] ="Invalid language (".trim($translationUnitLanguagekey).")  translation Label.Only allow english letters, numbers,dot,and whitespace.";
-            $flag = 1;
-          }
-        }
-      }
-      if( $flag == 1) {
-        return implode(",",$errorMsg);
-      }
-      else {
-        return "";
-      }
-
+        
+        return false;
     }
-
+    
+    /**
+     * This function is used for getting the correct translation message
+     *
+     * @param string $id
+     * @param array $arguments
+     *
+     * @return string
+     */
+    public function getTransaltionMessage($id='', $arguments=[])
+    {
+        $locale     = new \Neos\Flow\I18n\Locale('en');
+        
+        return $this->translator->translateById($id, $arguments, null, $locale, "Main", "PITS.TranslationHelper");
+    }
+    
+    /**
+     * This function is used for getting the full path of translation file
+     *
+     * @param type $language
+     *
+     * @return string
+     */
+    public function getTranslationFileFullPath($language='')
+    {
+        $packageKey    = $this->translationManagementSession->getTranslationPackageKey();
+        $resourcePath  = $this->getFlowPackageResourceTranslationPath($packageKey);
+        $file          = $this->translationManagementSession->getTranslationFile();
+        
+        return trim($resourcePath) . trim($language)."/" . trim($file);
+    }
 }
