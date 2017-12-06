@@ -143,30 +143,6 @@ class CommonSevices
     }
 
     /**
-     * This function is used for getting the translated message of the data saved successfully message
-     * @param string  $localeIdentifier
-     * @return string
-     */
-    public function getDataSavedSuccessfullyMsg($localeIdentifier = 'en')
-    {
-        $locale                 = new \Neos\Flow\I18n\Locale($localeIdentifier);
-        $validationErrorMessage = $this->translator->translateById("dataWasSavedSuccessfully", [], null, $locale, "Main", "PITS.TranslationHelper");
-        return $validationErrorMessage;
-    }
-
-    /**
-     * This function is used for getting the translated message of the data deleted successfully message
-     * @param string  $localeIdentifier
-     * @return string
-     */
-    public function getDataDeletedSuccessfullyMsg($localeIdentifier = 'en')
-    {
-        $locale                 = new \Neos\Flow\I18n\Locale($localeIdentifier);
-        $validationErrorMessage = $this->translator->translateById("dataWasDeletedSuccessfully", [], null, $locale, "Main", "PITS.TranslationHelper");
-        return $validationErrorMessage;
-    }
-
-    /**
      * This function is used for getting the list of available translated files in the given package
      * @param string $parentFolderName
      * @return array
@@ -450,7 +426,7 @@ class CommonSevices
         try {
             $output = array(
                 "status"  => "success",
-                "message" => $this->getDataSavedSuccessfullyMsg("en"),
+                "message" => $this->getTransaltionMessage('dataWasSavedSuccessfully'),
             );
 
             if ((empty($filePath) == false) && (is_file($filePath) == true) && (file_exists($filePath) == true)) {
@@ -660,64 +636,109 @@ class CommonSevices
 
     /**
      * This function is used for retrieving the translation node type for giving translation ID.
-     * @param string $translationFileFullPath
-     * @param string $translationlabelId
+     *
+     * @param string $file Translation full path
+     * @param string $id Translation label Id
+     *
      * @return string
      */
-    public function getTranlationNodeTypeFromCurrentTranslationId(
-        $translationFileFullPath = "",
-        $translationlabelId = ""
-    ) {
-        $output                  = 0;
-        $bodyTagElement          = null;
-        $translationUnitIdRecord = null;
-        try {
-            $domXmlPointer = new \DOMDocument("1.0");
-            // let's have a nice output
-            $domXmlPointer->preserveWhiteSpace = false;
-            $domXmlPointer->formatOutput       = true;
-            $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= true;
-
-            $domXmlPointer->load($translationFileFullPath, LIBXML_NOENT);
-
-            if ((empty($domXmlPointer) == false) && (empty($translationlabelId) == false)) {
-                $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
-                if (empty($bodyTagElements) == false) {
-                    $bodyTagElement = $bodyTagElements->item(0);
-                }
-            }
-            if (empty($bodyTagElement) == false) {
-                $transUnitElements = $bodyTagElement->getElementsByTagName("trans-unit");
-                if (empty($transUnitElements) == false) {
-                    foreach ($transUnitElements as $transUnitElement) {
-                        $transUnitElement->setIdAttribute("id", true);
-                    }
-                    // Get the id value
-                    $translationUnitIdRecord = $domXmlPointer->getElementById($translationlabelId);
-                    if (empty($translationUnitIdRecord) == false) {
-                        $translationIdSources = $translationUnitIdRecord->getElementsByTagName("target");
-                        if (empty($translationIdSources) == false) {
-                            $translationIdSourcesTargetTag = $translationIdSources->item(0);
-                            if (empty($translationIdSourcesTargetTag) == false) {
-                                $translationIdSourcesTargetTagHasChild = $translationIdSourcesTargetTag->hasChildNodes();
-                                if ($translationIdSourcesTargetTagHasChild == true) {
-                                    $translationIdSourcesTargetTagChild = $translationIdSourcesTargetTag->firstChild;
-                                    if (empty($translationIdSourcesTargetTagChild) == false) {
-                                        $output = $translationIdSourcesTargetTagChild->nodeType;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                $domXmlPointer->save($translationFileFullPath);
-            }
-            $domXmlPointer = null;
-        } catch (Exception $e) {
-            $output = 0;
+    public function getTranlationNodeType($file = "", $id = "")
+    {
+        $pointer =  $this->getDOMXMLPointer($file);
+                
+        if (!empty($this->setIdAttrTransUnit($file, $id))) {
+            return $this->getNodeType($pointer, $id);
         }
-        return $output;
+        
+        $pointer->save($file);
+                           
+        return 0;
+    }
+    
+    /**
+     * This function is used for getting common DOMXMLpointer
+     *
+     * @param string $file
+     *
+     * @return mixed
+     */
+    private function getDOMXMLPointer($file = '')
+    {
+        $domXmlPointer = new \DOMDocument("1.0");
+        $domXmlPointer->preserveWhiteSpace = false;
+        $domXmlPointer->formatOutput       = true;
+        $domXmlPointer->encoding= "UTF-8";
+        $domXmlPointer->resolveExternals= true;
+        $domXmlPointer->load($file, LIBXML_NOENT);
+        
+        return $domXmlPointer;
+    }
+    
+    /**
+     * This function is used for getting Body XLFF element
+     *
+     * @param object $domXmlPointer
+     * @param string $id Translation label Id
+     *
+     * @return mixed
+     */
+    private function getBodyTagElement($domXmlPointer = null, $id = '')
+    {
+        if (!empty($domXmlPointer) && !empty($id)) {
+            $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
+            if (!empty($bodyTagElements)) {
+                return $bodyTagElements->item(0);
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * This function is used for setting id attribute for trans-unit elements
+     *
+     * @param string $id Translation label Id
+     *
+     * @return mixed
+     */
+    private function setIdAttrTransUnit($file = '', $id = '')
+    {
+        $pointer =  $this->getDOMXMLPointer($file); //DOMXML pointer
+        $bodyTagElement = $this->getBodyTagElement($pointer, $id);
+        $elements = null; // trans-unit xml elements
+        
+        if (!empty($bodyTagElement)) {
+            $elements = $bodyTagElement->getElementsByTagName("trans-unit");
+            foreach ($elements as $element) {
+                $element->setIdAttribute("id", true);
+            }
+        }
+        
+        return $elements;
+    }
+    
+    /**
+     * This function is used for getting NodeType for a trans-unit element
+     *
+     * @param object $pointer
+     * @param string $id Translation label Id
+     *
+     * @return mixed
+     */
+    private function getNodeType($pointer = null, $id = '')
+    {
+        $transUnitRecord = $pointer->getElementById($id);
+        if (!empty($transUnitRecord)) {
+            $transUnitSources = $transUnitRecord->getElementsByTagName("target");
+            if (!empty($transUnitSources)) {
+                $targetTag = $transUnitSources->item(0);
+                if (!empty($targetTag) && $targetTag->hasChildNodes() && !empty($targetTag->firstChild)) {
+                    return  $targetTag->firstChild->nodeType;
+                }
+            }
+        }
+        
+        return 0;
     }
 
     /**

@@ -105,7 +105,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
         
         return [
             "status"  => "success",
-            "message" => $this->commonSevices->getDataSavedSuccessfullyMsg("en"),
+            "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
         ];
     }
 
@@ -217,7 +217,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                 if ($translationUnitAdditionSuccess == true) {
                     $output = array(
                         "status"  => "success",
-                        "message" => $this->commonSevices->getDataSavedSuccessfullyMsg("en"),
+                        "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
                     );
                 } else {
                     $output = array(

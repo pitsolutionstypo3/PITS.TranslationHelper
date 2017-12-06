@@ -31,24 +31,23 @@ class CDATAContentCheckerViewHelper extends \Neos\FluidAdaptor\Core\ViewHelper\A
      */
     protected $session;
 
-    public function render(
-        $translationlabelId = "",
-        $package = "",
-        $locale = "",
-        $source = ""
-    ) {
-        $output                      = false;
-        if ((empty($translationlabelId) == false) && (empty($package) == false) && (empty($locale) == false)) {
-            $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($package);
-            $translationFile          = $this->session->getTranslationFile();
-            $translationFileFullPath  = trim($translationsResourcePath) . trim($locale) . "/" . trim($translationFile);
-            $translationNodeType = $this->commonSevices->getTranlationNodeTypeFromCurrentTranslationId($translationFileFullPath, $translationlabelId);
-            if (empty($translationNodeType) == false) {
-                if ($translationNodeType == 4) {
-                    $output = true;
-                }
+    /**
+     * Checks whether the current element is CDATA or not
+     * 
+     * @param string $id
+     * @param string $locale
+     * 
+     * @return boolean
+     */
+    public function render($id = "", $locale = "")
+    {
+        if (!empty($id) && !empty($locale)) {
+            $file = $this->commonSevices->getTranslationFileFullPath($locale);
+            $nodeType = $this->commonSevices->getTranlationNodeType($file, $id);
+            if (!empty($nodeType) && $nodeType == XML_CDATA_SECTION_NODE) {
+                return true;
             }
         }
-        return $output;
+        return false;
     }
 }
