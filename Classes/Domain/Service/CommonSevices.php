@@ -18,7 +18,7 @@ class CommonSevices
      * @Flow\Inject
      * @var \Neos\ContentRepository\Domain\Service\ContentDimensionPresetSourceInterface
      */
-    protected $contentDimensionPresetSourceInterface;
+    protected $contentDimensionService;
 
     /**
      * @Flow\Inject
@@ -36,7 +36,7 @@ class CommonSevices
      * @Flow\Inject
      * @var \PITS\TranslationHelper\Domain\Session\TranslationManagement
      */
-    protected $translationManagementSession;
+    protected $session;
 
     /**
      * This variable is used for getTranslatedFilesFromDirectory function
@@ -48,7 +48,7 @@ class CommonSevices
      * This variable is used to store a list of currently available translation file path.
      * @var array
      */
-    protected $currentlyAvailableTranslationFiles = array();
+    protected $translationFiles = [];
 
     /**
      * It is used for getting the current using language in the website
@@ -74,10 +74,10 @@ class CommonSevices
      */
     public function getCurrentActiveSiteLanguages()
     {
-        $contentDimensionPresetsConfigurations = $this->contentDimensionPresetSourceInterface->getAllPresets();
+        $contentDimensionConfigurations = $this->contentDimensionService->getAllPresets();
         $languageIdentifiers                   = [];
-        if (isset($contentDimensionPresetsConfigurations["language"]["presets"]) == true) {
-            $languagePresets = $contentDimensionPresetsConfigurations["language"]["presets"];
+        if (isset($contentDimensionConfigurations["language"]["presets"]) == true) {
+            $languagePresets = $contentDimensionConfigurations["language"]["presets"];
             if ((empty($languagePresets) == false) && (is_array($languagePresets) == true)) {
                 $languageIdentifiers = array_keys($languagePresets);
             }
@@ -125,8 +125,10 @@ class CommonSevices
 
     /**
      * This function is used for getting the translated message for corresponding translation unit ID.
-     * @param string  $localeIdentifier
+     *
      * @param string $translationId
+     * @param string  $localeIdentifier
+     *
      * @return string
      */
     public function getCorrectTranslationLabelFromTranslationUnitId(
@@ -134,34 +136,10 @@ class CommonSevices
         $localeIdentifier = 'en'
     ) {
         $module           = $this->getPrefixFileName();
-        $packageKey       = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey       = $this->session->getTranslationPackageKey();
         $locale           = new \Neos\Flow\I18n\Locale($localeIdentifier);
         $translationLabel = $this->translator->translateById($translationId, [], null, $locale, trim($module), trim($packageKey));
         return $translationLabel;
-    }
-
-    /**
-     * This function is used for getting the translated message of the data saved successfully message
-     * @param string  $localeIdentifier
-     * @return string
-     */
-    public function getDataSavedSuccessfullyMsg($localeIdentifier = 'en')
-    {
-        $locale                 = new \Neos\Flow\I18n\Locale($localeIdentifier);
-        $validationErrorMessage = $this->translator->translateById("dataWasSavedSuccessfully", [], null, $locale, "Main", "PITS.TranslationHelper");
-        return $validationErrorMessage;
-    }
-
-    /**
-     * This function is used for getting the translated message of the data deleted successfully message
-     * @param string  $localeIdentifier
-     * @return string
-     */
-    public function getDataDeletedSuccessfullyMsg($localeIdentifier = 'en')
-    {
-        $locale                 = new \Neos\Flow\I18n\Locale($localeIdentifier);
-        $validationErrorMessage = $this->translator->translateById("dataWasDeletedSuccessfully", [], null, $locale, "Main", "PITS.TranslationHelper");
-        return $validationErrorMessage;
     }
 
     /**
@@ -173,7 +151,7 @@ class CommonSevices
     {
         $finalTranslatedFiles     = array();
         $this->parentFolderName   = trim($parentFolderName);
-        $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey               = $this->session->getTranslationPackageKey();
         $translationsResourcePath = $this->getFlowPackageResourceTranslationPath($packageKey);
         $translatedLanguages      = $this->getCurrentActiveSiteLanguages();
 
@@ -266,14 +244,15 @@ class CommonSevices
      */
     public function checkTranslationFilesExists()
     {
-        $packageKey                               = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey                               = $this->session->getTranslationPackageKey();
         $translationsResourcePath                 = $this->getFlowPackageResourceTranslationPath($packageKey);
         //$translatedLanguages                    = $this->getCurrentActiveSiteLanguages();
         $translatedLanguages                      = array_merge_recursive($this->getCurrentActiveSiteLanguages(), $this->getAllAvailableTranslationLanguagesFromTranslationPackage($translationsResourcePath));
         $translatedLanguages                      = array_unique($translatedLanguages);
-        $translationFile                          = $this->translationManagementSession->getTranslationFile();
+        $translationFile                          = $this->session->getTranslationFile();
         $availableTranslationFile                 = "";
-        $this->currentlyAvailableTranslationFiles = array();
+        $this->translationFiles                   = [];
+        
         try {
             if (sizeof($translatedLanguages) > 0) {
                 foreach ($translatedLanguages as $translatedLanguage) {
@@ -304,7 +283,7 @@ class CommonSevices
                     } elseif (filesize($translationFilePath) <= 0) {
                         $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
                     }
-                    $this->currentlyAvailableTranslationFiles[] = trim($translationFilePath);
+                    $this->translationFiles[] = trim($translationFilePath);
                 }
             }
             \clearstatcache();
@@ -325,15 +304,13 @@ class CommonSevices
         $translatedLanguage = "en"
     ) {
         try {
-            $packageKey = $this->translationManagementSession->getTranslationPackageKey();
+            $packageKey = $this->session->getTranslationPackageKey();
             if ((file_exists($translationFilePath) == true) && (is_file($translationFilePath) == true)) {
                 $emptyTranslationFileTemplate = '<?xml version="1.0"?>' . PHP_EOL . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">' . PHP_EOL . ' <file original="" product-name="' . trim($packageKey) . '" source-language="' . trim($translatedLanguage) . '" datatype="plaintext">' . PHP_EOL . '  <body></body>' . PHP_EOL . ' </file>' . PHP_EOL . '</xliff>';
                 \file_put_contents($translationFilePath, $emptyTranslationFileTemplate);
                 \clearstatcache();
             }
         } catch (\Exception $e) {
-            // \Neos\Flow\var_dump($e->getMessage());
-            // exit;
         }
     }
 
@@ -343,19 +320,17 @@ class CommonSevices
      */
     public function getUniqueTranslationIdsFromTranslationFile()
     {
-        $uniqueTranslationIds = array();
+        $translationIds = [];
         try {
-            if (empty($this->currentlyAvailableTranslationFiles) == false) {
-                foreach ($this->currentlyAvailableTranslationFiles as $currentlyAvailableTranslationFile) {
-                    $this->getTranslationIdsFromTranslationFile($currentlyAvailableTranslationFile, $uniqueTranslationIds);
+            if (empty($this->translationFiles) == false) {
+                foreach ($this->translationFiles as $translationFile) {
+                    $this->getTranslationIdsFromTranslationFile($translationFile, $translationIds);
                 }
             }
-            $uniqueTranslationIds = array_unique($uniqueTranslationIds);
+            $translationIds = array_unique($translationIds);
         } catch (\Exception $e) {
-            // \Neos\Flow\var_dump($e->getMessage());
-            // exit;
         }
-        return $uniqueTranslationIds;
+        return $translationIds;
     }
 
     /**
@@ -424,7 +399,7 @@ class CommonSevices
      */
     public function getPrefixFileName()
     {
-        $translationFileName = $this->translationManagementSession->getTranslationFile();
+        $translationFileName = $this->session->getTranslationFile();
         $prefixFileName      = "";
         if (empty($translationFileName) == false) {
             $prefixFileNameParts = explode(".xlf", trim($translationFileName));
@@ -451,7 +426,7 @@ class CommonSevices
         try {
             $output = array(
                 "status"  => "success",
-                "message" => $this->getDataSavedSuccessfullyMsg("en"),
+                "message" => $this->getTransaltionMessage('dataWasSavedSuccessfully'),
             );
 
             if ((empty($filePath) == false) && (is_file($filePath) == true) && (file_exists($filePath) == true)) {
@@ -465,7 +440,7 @@ class CommonSevices
                         );
                     }
                 } else {
-                    $removeTranslationUnitResult = $this->removeTranslationUnitFromCurrentTranslationFile($filePath, $id);
+                    $removeTranslationUnitResult = $this->removeTranslationUnit($filePath, $id);
                     if ($removeTranslationUnitResult == false) {
                         $output = array(
                             "status"  => "error",
@@ -611,7 +586,7 @@ class CommonSevices
      * @param string $translationId
      * @return mixed
      */
-    public function removeTranslationUnitFromCurrentTranslationFile(
+    public function removeTranslationUnit(
         $translationFile = "",
         $translationId = ""
     ) {
@@ -661,64 +636,109 @@ class CommonSevices
 
     /**
      * This function is used for retrieving the translation node type for giving translation ID.
-     * @param string $translationFileFullPath
-     * @param string $translationlabelId
+     *
+     * @param string $file Translation full path
+     * @param string $id Translation label Id
+     *
      * @return string
      */
-    public function getTranlationNodeTypeFromCurrentTranslationId(
-        $translationFileFullPath = "",
-        $translationlabelId = ""
-    ) {
-        $output                  = 0;
-        $bodyTagElement          = null;
-        $translationUnitIdRecord = null;
-        try {
-            $domXmlPointer = new \DOMDocument("1.0");
-            // let's have a nice output
-            $domXmlPointer->preserveWhiteSpace = false;
-            $domXmlPointer->formatOutput       = true;
-            $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= true;
-
-            $domXmlPointer->load($translationFileFullPath, LIBXML_NOENT);
-
-            if ((empty($domXmlPointer) == false) && (empty($translationlabelId) == false)) {
-                $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
-                if (empty($bodyTagElements) == false) {
-                    $bodyTagElement = $bodyTagElements->item(0);
-                }
-            }
-            if (empty($bodyTagElement) == false) {
-                $transUnitElements = $bodyTagElement->getElementsByTagName("trans-unit");
-                if (empty($transUnitElements) == false) {
-                    foreach ($transUnitElements as $transUnitElement) {
-                        $transUnitElement->setIdAttribute("id", true);
-                    }
-                    // Get the id value
-                    $translationUnitIdRecord = $domXmlPointer->getElementById($translationlabelId);
-                    if (empty($translationUnitIdRecord) == false) {
-                        $translationIdSources = $translationUnitIdRecord->getElementsByTagName("target");
-                        if (empty($translationIdSources) == false) {
-                            $translationIdSourcesTargetTag = $translationIdSources->item(0);
-                            if (empty($translationIdSourcesTargetTag) == false) {
-                                $translationIdSourcesTargetTagHasChild = $translationIdSourcesTargetTag->hasChildNodes();
-                                if ($translationIdSourcesTargetTagHasChild == true) {
-                                    $translationIdSourcesTargetTagChild = $translationIdSourcesTargetTag->firstChild;
-                                    if (empty($translationIdSourcesTargetTagChild) == false) {
-                                        $output = $translationIdSourcesTargetTagChild->nodeType;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                $domXmlPointer->save($translationFileFullPath);
-            }
-            $domXmlPointer = null;
-        } catch (Exception $e) {
-            $output = 0;
+    public function getTranlationNodeType($file = "", $id = "")
+    {
+        $pointer =  $this->getDOMXMLPointer($file);
+                
+        if (!empty($this->setIdAttrTransUnit($file, $id))) {
+            return $this->getNodeType($pointer, $id);
         }
-        return $output;
+        
+        $pointer->save($file);
+                           
+        return 0;
+    }
+    
+    /**
+     * This function is used for getting common DOMXMLpointer
+     *
+     * @param string $file
+     *
+     * @return mixed
+     */
+    private function getDOMXMLPointer($file = '')
+    {
+        $domXmlPointer = new \DOMDocument("1.0");
+        $domXmlPointer->preserveWhiteSpace = false;
+        $domXmlPointer->formatOutput       = true;
+        $domXmlPointer->encoding= "UTF-8";
+        $domXmlPointer->resolveExternals= true;
+        $domXmlPointer->load($file, LIBXML_NOENT);
+        
+        return $domXmlPointer;
+    }
+    
+    /**
+     * This function is used for getting Body XLFF element
+     *
+     * @param object $domXmlPointer
+     * @param string $id Translation label Id
+     *
+     * @return mixed
+     */
+    private function getBodyTagElement($domXmlPointer = null, $id = '')
+    {
+        if (!empty($domXmlPointer) && !empty($id)) {
+            $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
+            if (!empty($bodyTagElements)) {
+                return $bodyTagElements->item(0);
+            }
+        }
+        
+        return null;
+    }
+    
+    /**
+     * This function is used for setting id attribute for trans-unit elements
+     *
+     * @param string $id Translation label Id
+     *
+     * @return mixed
+     */
+    private function setIdAttrTransUnit($file = '', $id = '')
+    {
+        $pointer =  $this->getDOMXMLPointer($file); //DOMXML pointer
+        $bodyTagElement = $this->getBodyTagElement($pointer, $id);
+        $elements = null; // trans-unit xml elements
+        
+        if (!empty($bodyTagElement)) {
+            $elements = $bodyTagElement->getElementsByTagName("trans-unit");
+            foreach ($elements as $element) {
+                $element->setIdAttribute("id", true);
+            }
+        }
+        
+        return $elements;
+    }
+    
+    /**
+     * This function is used for getting NodeType for a trans-unit element
+     *
+     * @param object $pointer
+     * @param string $id Translation label Id
+     *
+     * @return mixed
+     */
+    private function getNodeType($pointer = null, $id = '')
+    {
+        $transUnitRecord = $pointer->getElementById($id);
+        if (!empty($transUnitRecord)) {
+            $transUnitSources = $transUnitRecord->getElementsByTagName("target");
+            if (!empty($transUnitSources)) {
+                $targetTag = $transUnitSources->item(0);
+                if (!empty($targetTag) && $targetTag->hasChildNodes() && !empty($targetTag->firstChild)) {
+                    return  $targetTag->firstChild->nodeType;
+                }
+            }
+        }
+        
+        return 0;
     }
 
     /**
@@ -731,17 +751,17 @@ class CommonSevices
     *
     * @return mixed
     */
-    public function validateTranslationLabel($label = '', $cdataChecker = 0, $language = '', $encodingChecker = 0)
+    public function validateTranslationLabel($label = '', $language = '')
     {
         $regExp        = "/[a-zA-Z0-9\s\.]*/i";
         $languages     = $this->getCurrentActiveSiteLanguages();
         $filePath      = $this->getTranslationFileFullPath($language);
-                       
+                         
         if (empty($languages)|| !in_array(trim($language), $languages)) {
             return $this->getTransaltionMessage('invalidLanguage');
         } elseif (!is_file($filePath) || !file_exists($filePath)) {
             return $this->getTransaltionMessage('transFileNotExist');
-        } elseif (!$cdataChecker || !$encodingChecker || !empty($label) || !preg_match($regExp, $label)) {
+        } elseif (empty($label) || !preg_match($regExp, $label)) {
             return $this->getTransaltionMessage('invalidLanguageLabel', ['language' => $language]);
         }
         
@@ -772,9 +792,9 @@ class CommonSevices
      */
     public function getTranslationFileFullPath($language='')
     {
-        $packageKey    = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey    = $this->session->getTranslationPackageKey();
         $resourcePath  = $this->getFlowPackageResourceTranslationPath($packageKey);
-        $file          = $this->translationManagementSession->getTranslationFile();
+        $file          = $this->session->getTranslationFile();
         
         return trim($resourcePath) . trim($language)."/" . trim($file);
     }

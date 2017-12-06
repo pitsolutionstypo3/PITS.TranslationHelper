@@ -182,7 +182,7 @@ $(document).ready(function() {
                                   <f:form.hidden name="translation_{translationKey}_language_{translatedLanguageKey}_translationId" id="translation_{translationKey}_language_{translatedLanguageKey}_translationId" value="{translationId}" />
                                   <f:form.hidden name="translation_{translationKey}_language_{translatedLanguageKey}_language" id="translation_{translationKey}_language_{translatedLanguageKey}_language" value="{translatedLanguage}" />
                                   <div class="cdata_selection">
-                                    <f:form.checkbox name="translation_{translationKey}_language_{translatedLanguageKey}_cdataSection" id="translation_{translationKey}_language_{translatedLanguageKey}_cdataSection" value="1" checked="{pitsTranslationHelper:CDATAContentChecker(translationlabelId:translationId,package:packageKey,locale:translatedLanguage,source:translationSource)}" /> CDATA
+                                    <f:form.checkbox name="translation_{translationKey}_language_{translatedLanguageKey}_cdataSection" id="translation_{translationKey}_language_{translatedLanguageKey}_cdataSection" value="1" checked="{pitsTranslationHelper:CDATAContentChecker(id:translationId,locale:translatedLanguage)}" /> CDATA
                                   </div>
                                   <div>
                                     <f:form.submit class="neos-button neos-button-small pitsTranslationHelperAjaxSubmitBtn" id="translation_{translationKey}_language_{translatedLanguageKey}_submit" value="{f:translate(id:'save',locale:'en',value:'save',package:'PITS.TranslationHelper')}" />
@@ -412,10 +412,10 @@ function addAndModifyASingleTranslationUnit(event,element) {
       type: "POST",
       dataType: "json",
       data: {
-        translationId: pitsTranslationHelperAjaxFormTranslationId,
-        translationLabel: pitsTranslationHelperAjaxFormTranslationDescription,
-        translationLanguage: pitsTranslationHelperAjaxFormTranslationLanguage,
-        translationCDATAContentChecker: pitsTranslationHelperAjaxFormCDATAContent
+        id: pitsTranslationHelperAjaxFormTranslationId,
+        label: pitsTranslationHelperAjaxFormTranslationDescription,
+        language: pitsTranslationHelperAjaxFormTranslationLanguage,
+        cdataChecker: pitsTranslationHelperAjaxFormCDATAContent
       },
       success: function(result,status,xhr) {
         // console.log(result);

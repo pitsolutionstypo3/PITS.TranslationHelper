@@ -46,7 +46,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      */
     public function indexAction($id = "", $label = "", $language = '', $cdataChecker = 0, $encodingChecker = 0)
     {
-        $isValid = $this->commonSevices->validateTranslationLabel($label, $cdataChecker, $language, $encodingChecker);
+        $isValid = $this->commonSevices->validateTranslationLabel($label, $language);
         $filePath      = $this->commonSevices->getTranslationFileFullPath($language);
         
         if ($isValid) {
@@ -70,65 +70,43 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      *
      * @return void
      */
-    public function deleteTransaltionUnitAction(
-        $translationId = "",
-        $csrfToken = ""
-    ) {
-        $output = array(
-            "status"  => "error",
-            "message" => "Invalid Inputs.",
-        );
-        $flag     = 0;
-        $errorMsg = array();
-        try {
-            $currentCsrfToken = $this->securityContext->getCsrfProtectionToken();
-            if (trim($csrfToken) != trim($currentCsrfToken)) {
-                $flag1 = 1;
-            }
-
-            if ($flag == 1) {
-                $output = array(
-                    "status"  => "error",
-                    "message" => implode(",", $errorMsg),
-                );
-            } else {
-                $availableSiteLanguages   = $this->commonSevices->getCurrentActiveSiteLanguages();
-                $packageKey               = $this->session->getTranslationPackageKey();
-                $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
-                $translationFile          = $this->session->getTranslationFile();
-
-                if (empty($availableSiteLanguages) == false) {
-                    $transUnitRemovalFlag = 0;
-                    foreach ($availableSiteLanguages as $translationLanguage) {
-                        $translationFileFullPath = trim($translationsResourcePath) . trim($translationLanguage) . "/" . trim($translationFile);
-                        if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                            $transUnitRemovalResult = $this->commonSevices->removeTranslationUnitFromCurrentTranslationFile($translationFileFullPath, $translationId);
-                            if ($transUnitRemovalResult == false) {
-                                $transUnitRemovalFlag = 1;
-                            }
-                        }
-                    }
-
-                    if ($transUnitRemovalFlag == 0) {
-                        $output = array(
-                            "status"  => "success",
-                            "message" => $this->commonSevices->getDataSavedSuccessfullyMsg("en"),
-                        );
-                    } else {
-                        $output = array(
-                            "status"  => "error",
-                            "message" => "Some problem in translation unit removal process",
-                        );
-                    }
+    public function deleteTransaltionUnitAction($translationId = "", $csrfToken = "")
+    {
+        if (trim($csrfToken) != trim($this->securityContext->getCsrfProtectionToken())) {
+            $output = ["status"  => "error","message"=>''];
+        } else {
+            $output = $this->removeTranslationFiles($translationId);
+        }
+            
+        $this->view->assign('value', $output);
+    }
+    
+    /**
+     * This function is used for removing translation files for a particular language.
+     *
+     * @param string $translationId
+     *
+     * @return array
+     */
+    private function removeTranslationFiles($translationId)
+    {
+        foreach ($this->commonSevices->getCurrentActiveSiteLanguages() as $language) {
+            $filePath = $this->commonSevices->getTranslationFileFullPath($language);
+            if ((is_file($filePath) == true) && (file_exists($filePath) == true)) {
+                $result = $this->commonSevices->removeTranslationUnit($filePath, $translationId);
+                if (!$result) {
+                    return [
+                        "status"  => "error",
+                        "message" => $this->commonSevices->getTransaltionMessage('transUnitRemovalProblem'),
+                    ];
                 }
             }
-        } catch (\Exception $e) {
-            $output = array(
-                "status"  => "error",
-                "message" => $e->getMessage(),
-            );
         }
-        $this->view->assign('value', $output);
+        
+        return [
+            "status"  => "success",
+            "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
+        ];
     }
 
     /**
@@ -201,7 +179,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                                 if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
                                     $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
                                 }
-                                $translationUnitCommonValidationResult = $this->commonSevices->validateTranslationLabel($translationLabel, $translationCDATAContentChecker, $translationUnitLanguage, $translationUnitEncodingDecisionChecker);
+                                $translationUnitCommonValidationResult = $this->commonSevices->validateTranslationLabel($translationLabel, $translationUnitLanguage);
                                 if (empty($translationUnitCommonValidationResult) == false) {
                                     $errorMsg[] = trim($translationUnitCommonValidationResult);
                                     $flag       = 1;
@@ -239,7 +217,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                 if ($translationUnitAdditionSuccess == true) {
                     $output = array(
                         "status"  => "success",
-                        "message" => $this->commonSevices->getDataSavedSuccessfullyMsg("en"),
+                        "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
                     );
                 } else {
                     $output = array(
