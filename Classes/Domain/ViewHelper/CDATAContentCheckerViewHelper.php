@@ -33,21 +33,21 @@ class CDATAContentCheckerViewHelper extends \Neos\FluidAdaptor\Core\ViewHelper\A
 
     /**
      * Checks whether the current element is CDATA or not
-     * 
+     *
      * @param string $id
      * @param string $locale
-     * 
+     *
      * @return boolean
      */
     public function render($id = "", $locale = "")
     {
         if (!empty($id) && !empty($locale)) {
             $file = $this->commonSevices->getTranslationFileFullPath($locale);
-            $nodeType = $this->commonSevices->getTranlationNodeType($file, $id);
-            if (!empty($nodeType) && $nodeType == XML_CDATA_SECTION_NODE) {
+            if ($this->commonSevices->getTranlationNodeType($file, $id) == XML_CDATA_SECTION_NODE) {
                 return true;
             }
         }
+        
         return false;
     }
 }
