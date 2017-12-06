@@ -582,56 +582,27 @@ class CommonSevices
 
     /**
      * This function is used for removing a selected translation unit from the current translation file.
-     * @param string $translationFile
-     * @param string $translationId
+     *
+     * @param string $file
+     * @param string $id
+     *
      * @return mixed
      */
-    public function removeTranslationUnit(
-        $translationFile = "",
-        $translationId = ""
-    ) {
-        $output         = true;
-        $bodyTagElement = null;
-        try {
-            $domXmlPointer = new \DOMDocument("1.0");
-            // let's have a nice output
-            $domXmlPointer->preserveWhiteSpace = false;
-            $domXmlPointer->formatOutput       = true;
-            $domXmlPointer->encoding= "UTF-8";
-            $domXmlPointer->resolveExternals= true;
-
-            $domXmlPointer->load($translationFile, LIBXML_NOENT);
-
-            if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
-                $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
-                if (empty($bodyTagElements) == false) {
-                    $bodyTagElement = $bodyTagElements->item(0);
-                }
+    public function removeTranslationUnit($file = "", $id = "")
+    {
+        $pointer =  $this->getDOMXMLPointer($file);
+        $bodyTags = $this->getBodyTagElement($pointer, $id);
+        if (!empty($bodyTags)) {
+            $this->setIdAttrTransUnit($file, $id);
+            $record = $pointer->getElementById($id);
+            if (empty($record) || empty($bodyTags->removeChild($record))) {
+                return false;
             }
-
-            if (empty($bodyTagElement) == false) {
-                $transUnitElements = $domXmlPointer->getElementsByTagName("trans-unit");
-                if (empty($transUnitElements) == false) {
-                    foreach ($transUnitElements as $transUnitElement) {
-                        $transUnitElement->setIdAttribute("id", true);
-                    }
-
-                    // Get the id value
-                    $translationUnitIdRecord = $domXmlPointer->getElementById($translationId);
-                    if (empty($translationUnitIdRecord) == false) {
-                        $oldChild = $bodyTagElement->removeChild($translationUnitIdRecord);
-                        if (empty($oldChild) == true) {
-                            $output = false;
-                        }
-                    }
-                }
-                $domXmlPointer->save($translationFile);
-            }
-            $domXmlPointer = null;
-        } catch (\Exception $e) {
-            $output = false;
         }
-        return $output;
+        $pointer->save($file);
+        $pointer = null;
+     
+        return true;
     }
 
     /**
@@ -776,7 +747,7 @@ class CommonSevices
      *
      * @return string
      */
-    public function getTransaltionMessage($id='', $arguments=[])
+    public function getTransaltionMessage($id = '', $arguments = [])
     {
         $locale     = new \Neos\Flow\I18n\Locale('en');
         
@@ -790,7 +761,7 @@ class CommonSevices
      *
      * @return string
      */
-    public function getTranslationFileFullPath($language='')
+    public function getTranslationFileFullPath($language = '')
     {
         $packageKey    = $this->session->getTranslationPackageKey();
         $resourcePath  = $this->getFlowPackageResourceTranslationPath($packageKey);
