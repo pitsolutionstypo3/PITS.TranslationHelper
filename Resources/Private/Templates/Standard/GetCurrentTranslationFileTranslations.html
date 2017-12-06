@@ -412,10 +412,10 @@ function addAndModifyASingleTranslationUnit(event,element) {
       type: "POST",
       dataType: "json",
       data: {
-        translationId: pitsTranslationHelperAjaxFormTranslationId,
-        translationLabel: pitsTranslationHelperAjaxFormTranslationDescription,
-        translationLanguage: pitsTranslationHelperAjaxFormTranslationLanguage,
-        translationCDATAContentChecker: pitsTranslationHelperAjaxFormCDATAContent
+        id: pitsTranslationHelperAjaxFormTranslationId,
+        label: pitsTranslationHelperAjaxFormTranslationDescription,
+        language: pitsTranslationHelperAjaxFormTranslationLanguage,
+        cdataChecker: pitsTranslationHelperAjaxFormCDATAContent
       },
       success: function(result,status,xhr) {
         // console.log(result);

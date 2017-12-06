@@ -18,7 +18,7 @@ class CommonSevices
      * @Flow\Inject
      * @var \Neos\ContentRepository\Domain\Service\ContentDimensionPresetSourceInterface
      */
-    protected $contentDimensionPresetSourceInterface;
+    protected $contentDimensionService;
 
     /**
      * @Flow\Inject
@@ -36,7 +36,7 @@ class CommonSevices
      * @Flow\Inject
      * @var \PITS\TranslationHelper\Domain\Session\TranslationManagement
      */
-    protected $translationManagementSession;
+    protected $session;
 
     /**
      * This variable is used for getTranslatedFilesFromDirectory function
@@ -48,7 +48,7 @@ class CommonSevices
      * This variable is used to store a list of currently available translation file path.
      * @var array
      */
-    protected $currentlyAvailableTranslationFiles = array();
+    protected $translationFiles = [];
 
     /**
      * It is used for getting the current using language in the website
@@ -74,10 +74,10 @@ class CommonSevices
      */
     public function getCurrentActiveSiteLanguages()
     {
-        $contentDimensionPresetsConfigurations = $this->contentDimensionPresetSourceInterface->getAllPresets();
+        $contentDimensionConfigurations = $this->contentDimensionService->getAllPresets();
         $languageIdentifiers                   = [];
-        if (isset($contentDimensionPresetsConfigurations["language"]["presets"]) == true) {
-            $languagePresets = $contentDimensionPresetsConfigurations["language"]["presets"];
+        if (isset($contentDimensionConfigurations["language"]["presets"]) == true) {
+            $languagePresets = $contentDimensionConfigurations["language"]["presets"];
             if ((empty($languagePresets) == false) && (is_array($languagePresets) == true)) {
                 $languageIdentifiers = array_keys($languagePresets);
             }
@@ -125,8 +125,10 @@ class CommonSevices
 
     /**
      * This function is used for getting the translated message for corresponding translation unit ID.
-     * @param string  $localeIdentifier
+     *
      * @param string $translationId
+     * @param string  $localeIdentifier
+     *
      * @return string
      */
     public function getCorrectTranslationLabelFromTranslationUnitId(
@@ -134,7 +136,7 @@ class CommonSevices
         $localeIdentifier = 'en'
     ) {
         $module           = $this->getPrefixFileName();
-        $packageKey       = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey       = $this->session->getTranslationPackageKey();
         $locale           = new \Neos\Flow\I18n\Locale($localeIdentifier);
         $translationLabel = $this->translator->translateById($translationId, [], null, $locale, trim($module), trim($packageKey));
         return $translationLabel;
@@ -173,7 +175,7 @@ class CommonSevices
     {
         $finalTranslatedFiles     = array();
         $this->parentFolderName   = trim($parentFolderName);
-        $packageKey               = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey               = $this->session->getTranslationPackageKey();
         $translationsResourcePath = $this->getFlowPackageResourceTranslationPath($packageKey);
         $translatedLanguages      = $this->getCurrentActiveSiteLanguages();
 
@@ -266,14 +268,15 @@ class CommonSevices
      */
     public function checkTranslationFilesExists()
     {
-        $packageKey                               = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey                               = $this->session->getTranslationPackageKey();
         $translationsResourcePath                 = $this->getFlowPackageResourceTranslationPath($packageKey);
         //$translatedLanguages                    = $this->getCurrentActiveSiteLanguages();
         $translatedLanguages                      = array_merge_recursive($this->getCurrentActiveSiteLanguages(), $this->getAllAvailableTranslationLanguagesFromTranslationPackage($translationsResourcePath));
         $translatedLanguages                      = array_unique($translatedLanguages);
-        $translationFile                          = $this->translationManagementSession->getTranslationFile();
+        $translationFile                          = $this->session->getTranslationFile();
         $availableTranslationFile                 = "";
-        $this->currentlyAvailableTranslationFiles = array();
+        $this->translationFiles                   = [];
+        
         try {
             if (sizeof($translatedLanguages) > 0) {
                 foreach ($translatedLanguages as $translatedLanguage) {
@@ -304,7 +307,7 @@ class CommonSevices
                     } elseif (filesize($translationFilePath) <= 0) {
                         $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
                     }
-                    $this->currentlyAvailableTranslationFiles[] = trim($translationFilePath);
+                    $this->translationFiles[] = trim($translationFilePath);
                 }
             }
             \clearstatcache();
@@ -325,15 +328,13 @@ class CommonSevices
         $translatedLanguage = "en"
     ) {
         try {
-            $packageKey = $this->translationManagementSession->getTranslationPackageKey();
+            $packageKey = $this->session->getTranslationPackageKey();
             if ((file_exists($translationFilePath) == true) && (is_file($translationFilePath) == true)) {
                 $emptyTranslationFileTemplate = '<?xml version="1.0"?>' . PHP_EOL . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">' . PHP_EOL . ' <file original="" product-name="' . trim($packageKey) . '" source-language="' . trim($translatedLanguage) . '" datatype="plaintext">' . PHP_EOL . '  <body></body>' . PHP_EOL . ' </file>' . PHP_EOL . '</xliff>';
                 \file_put_contents($translationFilePath, $emptyTranslationFileTemplate);
                 \clearstatcache();
             }
         } catch (\Exception $e) {
-            // \Neos\Flow\var_dump($e->getMessage());
-            // exit;
         }
     }
 
@@ -343,19 +344,17 @@ class CommonSevices
      */
     public function getUniqueTranslationIdsFromTranslationFile()
     {
-        $uniqueTranslationIds = array();
+        $translationIds = [];
         try {
-            if (empty($this->currentlyAvailableTranslationFiles) == false) {
-                foreach ($this->currentlyAvailableTranslationFiles as $currentlyAvailableTranslationFile) {
-                    $this->getTranslationIdsFromTranslationFile($currentlyAvailableTranslationFile, $uniqueTranslationIds);
+            if (empty($this->translationFiles) == false) {
+                foreach ($this->translationFiles as $translationFile) {
+                    $this->getTranslationIdsFromTranslationFile($translationFile, $translationIds);
                 }
             }
-            $uniqueTranslationIds = array_unique($uniqueTranslationIds);
+            $translationIds = array_unique($translationIds);
         } catch (\Exception $e) {
-            // \Neos\Flow\var_dump($e->getMessage());
-            // exit;
         }
-        return $uniqueTranslationIds;
+        return $translationIds;
     }
 
     /**
@@ -424,7 +423,7 @@ class CommonSevices
      */
     public function getPrefixFileName()
     {
-        $translationFileName = $this->translationManagementSession->getTranslationFile();
+        $translationFileName = $this->session->getTranslationFile();
         $prefixFileName      = "";
         if (empty($translationFileName) == false) {
             $prefixFileNameParts = explode(".xlf", trim($translationFileName));
@@ -465,7 +464,7 @@ class CommonSevices
                         );
                     }
                 } else {
-                    $removeTranslationUnitResult = $this->removeTranslationUnitFromCurrentTranslationFile($filePath, $id);
+                    $removeTranslationUnitResult = $this->removeTranslationUnit($filePath, $id);
                     if ($removeTranslationUnitResult == false) {
                         $output = array(
                             "status"  => "error",
@@ -611,7 +610,7 @@ class CommonSevices
      * @param string $translationId
      * @return mixed
      */
-    public function removeTranslationUnitFromCurrentTranslationFile(
+    public function removeTranslationUnit(
         $translationFile = "",
         $translationId = ""
     ) {
@@ -731,17 +730,17 @@ class CommonSevices
     *
     * @return mixed
     */
-    public function validateTranslationLabel($label = '', $cdataChecker = 0, $language = '', $encodingChecker = 0)
+    public function validateTranslationLabel($label = '', $language = '')
     {
         $regExp        = "/[a-zA-Z0-9\s\.]*/i";
         $languages     = $this->getCurrentActiveSiteLanguages();
         $filePath      = $this->getTranslationFileFullPath($language);
-                       
+                         
         if (empty($languages)|| !in_array(trim($language), $languages)) {
             return $this->getTransaltionMessage('invalidLanguage');
         } elseif (!is_file($filePath) || !file_exists($filePath)) {
             return $this->getTransaltionMessage('transFileNotExist');
-        } elseif (!$cdataChecker || !$encodingChecker || !empty($label) || !preg_match($regExp, $label)) {
+        } elseif (empty($label) || !preg_match($regExp, $label)) {
             return $this->getTransaltionMessage('invalidLanguageLabel', ['language' => $language]);
         }
         
@@ -772,9 +771,9 @@ class CommonSevices
      */
     public function getTranslationFileFullPath($language='')
     {
-        $packageKey    = $this->translationManagementSession->getTranslationPackageKey();
+        $packageKey    = $this->session->getTranslationPackageKey();
         $resourcePath  = $this->getFlowPackageResourceTranslationPath($packageKey);
-        $file          = $this->translationManagementSession->getTranslationFile();
+        $file          = $this->session->getTranslationFile();
         
         return trim($resourcePath) . trim($language)."/" . trim($file);
     }

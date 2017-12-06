@@ -707,6 +707,9 @@
       <trans-unit id="transFileNotExist" xml:space="preserve">
         <target>translation file does not exist.</target>
       </trans-unit>
+      <trans-unit id="transUnitRemovalProblem" xml:space="preserve">
+        <target>Some problem in translation unit removal process</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
