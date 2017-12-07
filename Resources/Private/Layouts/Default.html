@@ -6,11 +6,11 @@
       {neos:backend.translate(id: 'package', value: 'Package')}
     </f:link.action>
 
-    <f:link.action id="pitTranslationHelperTranlationFilesPageLink" class="neos-button" controller="Standard" action="getAvailableTranslationFilesInPackage" package="PITS.TranslationHelper" style="display:none;">
+    <f:link.action id="pitTranslationHelperTranlationFilesPageLink" class="neos-button" controller="Standard" action="getFiles" package="PITS.TranslationHelper" style="display:none;">
       <f:translate id="translationFiles" locale="{localeIndicator}" package="Neos.Neos">Translation Files</f:translate>
     </f:link.action>
 
-    <f:link.action id="pitTranslationHelperTranslationsPageLink" class="neos-button" controller="Standard" action="getCurrentTranslationFileTranslations" package="PITS.TranslationHelper" style="display:none;">
+    <f:link.action id="pitTranslationHelperTranslationsPageLink" class="neos-button" controller="Standard" action="getTranslations" package="PITS.TranslationHelper" style="display:none;">
       <f:translate id="translations" locale="{localeIndicator}" package="Neos.Neos">Translations</f:translate>
     </f:link.action>
 

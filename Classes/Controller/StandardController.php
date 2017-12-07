@@ -23,12 +23,7 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
     protected $session;
 
     /**
-     * @var string
-     */
-    protected $localeIdentifier;
-
-    /**
-     * This variable is used for getTranslatedFilesFromDirectory function.
+     * This variable is used for getDirectoryFiles function.
      *
      * @var string
      */
@@ -36,17 +31,20 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
 
     /**
      * @param \Neos\Flow\Mvc\View\ViewInterface $view
+     *
+     * @return void
      */
-    public function initializeView(\Neos\Flow\Mvc\View\ViewInterface $view)
+    public function initializeView($view)
     {
-        $this->localeIdentifier = $this->commonSevices->getLocaleIdentifier();
         $this->view->assignMultiple(array(
-            'localeIndicator' => $this->localeIdentifier,
+            'localeIndicator' => $this->commonSevices->getLocale(),
         ));
     }
 
     /**
      * This function is used for displaying translation available package list.
+     *
+     * @return void
      */
     public function indexAction()
     {
@@ -71,77 +69,73 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
     /**
      * This function is used for redirecting to suitable actions within the current Controller.
      *
-     * @param string $redirectInput
-     * @param string $redirectFrom
+     * @param string $input
+     * @param mixed $from
+     *
+     * @return void
      */
-    public function redirectCorrectTranslationAction(
-        $redirectInput = '',
-        $redirectFrom = ''
-    ) {
-        $redirctAction = 'index';
-        if ('packageKey' == trim($redirectFrom)) {
-            $activePackages = $this->commonSevices->getPackages();
-            if (sizeof($activePackages) > 0) {
-                if (in_array(trim($redirectInput), $activePackages)) {
-                    $this->session->setpackageKey($redirectInput);
-                    $redirctAction = 'getAvailableTranslationFilesInPackage';
-                }
-            }
-        } elseif ('translationFile' == trim($redirectFrom)) {
-            $packageTranslationFiles = $this->commonSevices->getAllTranslationFilesList($this->parentFolderName);
-            if (in_array($redirectInput, $packageTranslationFiles)) {
-                $this->session->setFile($redirectInput);
-                $redirctAction = 'getCurrentTranslationFileTranslations';
-            }
+    public function redirectAction($input = '', $from = '')
+    {
+        $action = 'index';
+        if ('packageKey' == trim($from)
+            && sizeof($this->commonSevices->getPackages()) > 0
+            && in_array(trim($input), $this->commonSevices->getPackages())) {
+            $this->session->setpackageKey($input);
+            $action = 'getAvailableTranslationFilesInPackage';
+        } elseif ('translationFile' == trim($from)
+                  && in_array($input, $this->commonSevices->getFiles($this->parentFolderName))) {
+            $this->session->setFile($input);
+            $action = 'getCurrentTranslationFileTranslations';
         }
-        $this->redirect($redirctAction, 'Standard', 'Pits.TranslationHelper');
+        $this->redirect($action, 'Standard', 'PITS.TranslationHelper');
 
         return '';
     }
 
     /**
      * This function is used for displaying available translation files in the selected package.
+     *
+     * @return void
      */
-    public function getAvailableTranslationFilesInPackageAction()
+    public function getFilesAction()
     {
-        $translatedLanguages = $this->commonSevices->getLanguages();
-        if (empty($translatedLanguages)) {
-            $this->redirect('index', 'Standard', 'Pits.TranslationHelper');
-        }
+        $this->isValidLanguages();
         $this->parentFolderName      = '';
-        $packageKey                  = $this->session->getPackageKey();
-        $packageTranslationFiles     = $this->commonSevices->getAllTranslationFilesList($this->parentFolderName);
-        $packageTranslationFilesSize = sizeof($packageTranslationFiles);
         $this->view->assignMultiple([
-            'packageKey'                  => $packageKey,
-            'packageTranslationFiles'     => $packageTranslationFiles,
-            'packageTranslationFilesSize' => $packageTranslationFilesSize,
+            'packageKey'                  => $this->session->getPackageKey(),
+            'packageTranslationFiles'     => $this->commonSevices->getFiles($this->parentFolderName),
+            'packageTranslationFilesSize' => sizeof($this->commonSevices->getFiles($this->parentFolderName)),
         ]);
     }
 
     /**
      * This function is used for displaying list of available translations in the selected translation file.
      */
-    public function getCurrentTranslationFileTranslationsAction()
+    public function getTranslationsAction()
     {
-        $translatedLanguages = $this->commonSevices->getLanguages();
-        if (empty($translatedLanguages)) {
+        $this->isValidLanguages();
+        $this->commonSevices->checkTranslationFilesExists();
+        $this->view->assignMultiple([
+            'translationFileName'     => $this->session->getFile(),
+            'translationIds'          => $this->commonSevices->getTranslationIds(),
+            'translationIdsSize'      => sizeof($this->commonSevices->getTranslationIds()),
+            'translatedLanguages'     => $this->commonSevices->getLanguages(),
+            'translatedLanguagesSize' => sizeof($this->commonSevices->getLanguages()),
+            'packageKey'              => $this->session->getPackageKey(),
+            'translationSource'       => $this->commonSevices->getPrefixFileName(),
+        ]);
+    }
+    
+    /**
+     * This function is used for checking whether the site has valid languages or not
+     * based on this check a redirection performed
+     *
+     * @return void
+     */
+    private function isValidLanguages()
+    {
+        if (empty($this->commonSevices->getLanguages())) {
             $this->redirect('index', 'Standard', 'Pits.TranslationHelper');
         }
-        $this->commonSevices->checkTranslationFilesExists();
-        $translationIds      = $this->commonSevices->getUniqueTranslationIdsFromTranslationFile();
-        $translationIdsSize  = sizeof($translationIds);
-        $translationFileName = $this->session->getFile();
-        $packageKey          = $this->session->getPackageKey();
-        $translationSource   = $this->commonSevices->getPrefixFileName();
-        $this->view->assignMultiple([
-            'translationFileName'     => $translationFileName,
-            'translationIds'          => $translationIds,
-            'translationIdsSize'      => $translationIdsSize,
-            'translatedLanguages'     => $translatedLanguages,
-            'translatedLanguagesSize' => sizeof($translatedLanguages),
-            'packageKey'              => $packageKey,
-            'translationSource'       => $translationSource,
-        ]);
     }
 }
