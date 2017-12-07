@@ -1,9 +1,8 @@
 <?php
+
 namespace PITS\TranslationHelper\Domain\Session;
 
-/*
- * This file is part of the Pits.TranslationHelper package.
- */
+// This file is part of the Pits.TranslationHelper package.
 
 use Neos\Flow\Annotations as Flow;
 
@@ -13,59 +12,68 @@ use Neos\Flow\Annotations as Flow;
 class TranslationManagement
 {
     /**
-     * This session variable is used for storing translationPackageKey
+     * This session variable is used for storing Translation Package Key
+     *
      * @var string
      */
-    protected $translationPackageKey = "";
+    protected $packageKey = "";
 
     /**
      * This session variable is used for storing translationFile
+     *
      * @var string
      */
-    protected $translationFile = "";
+    protected $file = "";
 
     /**
      * Gets the value of $translationPackageKey
+     *
      * @Flow\Session(autoStart = TRUE)
+     *
      * @return string
      */
-    public function getTranslationPackageKey()
+    public function getPackageKey()
     {
-        return $this->translationPackageKey;
+        return $this->packageKey;
     }
 
     /**
-     * Sets the value of $translationPackageKey
+     * Sets the value of $packageKey
+     *
      * @Flow\Session(autoStart = TRUE)
-     * @param string $translationPackageKey
+     *
+     * @param string $packageKey
+     *
      * @return void
      */
-    public function setTranslationPackageKey(
-        $translationPackageKey = ""
-    ) {
-        $this->translationPackageKey = $translationPackageKey;
+    public function setpackageKey($packageKey = "")
+    {
+        $this->packageKey = $packageKey;
     }
 
     /**
-     * Gets the value of $translationFile
+     * Gets the value of $file
+     *
      * @Flow\Session(autoStart = TRUE)
+     *
      * @return string
      */
-    public function getTranslationFile()
+    public function getFile()
     {
-        return $this->translationFile;
+        return $this->file;
     }
 
     /**
-     * Sets the value of $translationFile
+     * Sets the value of $file
+     *
      * @Flow\Session(autoStart = TRUE)
-     * @param string $translationFile
+     *
+     * @param string $file
+     *
      * @return void
      */
-    public function setTranslationFile(
-        $translationFile = ""
-    ) {
-        $this->translationFile = $translationFile;
+    public function setFile($file = "")
+    {
+        $this->file = $file;
     }
-
 }
