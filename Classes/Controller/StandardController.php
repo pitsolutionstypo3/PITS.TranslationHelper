@@ -34,7 +34,7 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
      *
      * @return void
      */
-    public function initializeView($view)
+    public function initializeView(\Neos\Flow\Mvc\View\ViewInterface $view)
     {
         $this->view->assignMultiple(array(
             'localeIndicator' => $this->commonSevices->getLocale(),
@@ -70,7 +70,7 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
      * This function is used for redirecting to suitable actions within the current Controller.
      *
      * @param string $input
-     * @param mixed $from
+     * @param string $from
      *
      * @return void
      */
@@ -81,15 +81,13 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
             && sizeof($this->commonSevices->getPackages()) > 0
             && in_array(trim($input), $this->commonSevices->getPackages())) {
             $this->session->setpackageKey($input);
-            $action = 'getAvailableTranslationFilesInPackage';
+            $action = 'getFiles';
         } elseif ('translationFile' == trim($from)
                   && in_array($input, $this->commonSevices->getFiles($this->parentFolderName))) {
             $this->session->setFile($input);
-            $action = 'getCurrentTranslationFileTranslations';
+            $action = 'getTranslations';
         }
         $this->redirect($action, 'Standard', 'PITS.TranslationHelper');
-
-        return '';
     }
 
     /**
