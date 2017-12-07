@@ -1,9 +1,8 @@
 <?php
+
 namespace PITS\TranslationHelper\Controller;
 
-/*
- * This file is part of the PITS.TranslationHelper package.
- */
+// This file is part of the PITS.TranslationHelper package.
 
 use Neos\Flow\Annotations as Flow;
 
@@ -46,7 +45,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      */
     public function indexAction($id = "", $label = "", $language = '', $cdataChecker = 0, $encodingChecker = 0)
     {
-        $isValid = $this->commonSevices->validateTranslationLabel($label, $language);
+        $isValid       = $this->commonSevices->validateTranslationLabel($label, $language);
         $filePath      = $this->commonSevices->getTranslationFileFullPath($language);
         
         if ($isValid) {
@@ -73,40 +72,12 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
     public function deleteTransaltionUnitAction($translationId = "", $csrfToken = "")
     {
         if (trim($csrfToken) != trim($this->securityContext->getCsrfProtectionToken())) {
-            $output = ["status"  => "error","message"=>''];
+            $output = ["status"  => "error","message" => ''];
         } else {
             $output = $this->removeTranslationFiles($translationId);
         }
             
         $this->view->assign('value', $output);
-    }
-    
-    /**
-     * This function is used for removing translation files for a particular language.
-     *
-     * @param string $translationId
-     *
-     * @return array
-     */
-    private function removeTranslationFiles($translationId)
-    {
-        foreach ($this->commonSevices->getCurrentActiveSiteLanguages() as $language) {
-            $filePath = $this->commonSevices->getTranslationFileFullPath($language);
-            if ((is_file($filePath) == true) && (file_exists($filePath) == true)) {
-                $result = $this->commonSevices->removeTranslationUnit($filePath, $translationId);
-                if (!$result) {
-                    return [
-                        "status"  => "error",
-                        "message" => $this->commonSevices->getTransaltionMessage('transUnitRemovalProblem'),
-                    ];
-                }
-            }
-        }
-        
-        return [
-            "status"  => "success",
-            "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
-        ];
     }
 
     /**
@@ -136,10 +107,11 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
         );
         $flag     = 0;
         $errorMsg = array();
+
         try {
-            $packageKey               = $this->session->getTranslationPackageKey();
-            $translationsResourcePath = $this->commonSevices->getFlowPackageResourceTranslationPath($packageKey);
-            $translationFile          = $this->session->getTranslationFile();
+            $packageKey               = $this->session->getPackageKey();
+            $translationsResourcePath = $this->commonSevices->getPackagePath($packageKey);
+            $translationFile          = $this->session->getFile();
             $duplicateTranslationId   = 0;
 
             if (empty($translationUnitLanguages) == true) {
@@ -167,8 +139,8 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                         foreach ($translationUnitLanguages as $translationUnitLanguagekey => $translationUnitLanguage) {
                             $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
                             if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                                $translationLabel               = "";
-                                $translationCDATAContentChecker = 0;
+                                $translationLabel                       = "";
+                                $translationCDATAContentChecker         = 0;
                                 $translationUnitEncodingDecisionChecker = 0;
                                 if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
                                     $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
@@ -233,5 +205,30 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
             );
         }
         $this->view->assign('value', $output);
+    }
+    
+    /**
+     * This function is used for removing translation files for a particular language.
+     *
+     * @param string $id Translation unit Id
+     *
+     * @return array
+     */
+    private function removeTranslationFiles($id)
+    {
+        foreach ($this->commonSevices->getLanguages() as $language) {
+            $file = $this->commonSevices->getTranslationFileFullPath($language);
+            if (!is_file($file) || !file_exists($file) || !$this->commonSevices->removeTranslationUnit($file, $id)) {
+                return [
+                    "status"  => "error",
+                    "message" => $this->commonSevices->getTransaltionMessage('transUnitRemovalProblem'),
+                ];
+            }
+        }
+        
+        return [
+            "status"  => "success",
+            "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
+        ];
     }
 }
