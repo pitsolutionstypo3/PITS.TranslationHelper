@@ -57,7 +57,7 @@ class CommonSevices
     public function getLocale($context = null)
     {
         if (!empty($context) && !empty($context->getRequest()->getInternalArguments())) {
-            $node                 = $context->getRequest()->getInternalArguments()['__node'];
+            $node = $context->getRequest()->getInternalArguments()['__node'];
 
             return $node->getContext()->getTargetDimensions()["language"];
         }
@@ -130,9 +130,8 @@ class CommonSevices
         $module           = $this->getPrefixFileName();
         $packageKey       = $this->session->getPackageKey();
         $locale           = new \Neos\Flow\I18n\Locale($localeIdentifier);
-        $translationLabel = $this->translator->translateById($translationId, [], null, $locale, trim($module), trim($packageKey));
-
-        return $translationLabel;
+        
+        return $this->translator->translateById($translationId, [], null, $locale, trim($module), trim($packageKey));
     }
 
     /**
@@ -190,53 +189,17 @@ class CommonSevices
      */
     public function checkTranslationFilesExists()
     {
-        $packageKey                               = $this->session->getPackageKey();
-        $translationsResourcePath                 = $this->getPackagePath($packageKey);
-        //$translatedLanguages                    = $this->getLanguages();
-        $translatedLanguages                      = array_merge_recursive($this->getLanguages(), $this->getPackageLanguages($translationsResourcePath));
-        $translatedLanguages                      = array_unique($translatedLanguages);
-        $translationFile                          = $this->session->getFile();
-        $availableTranslationFile                 = "";
+        $packagePath                              = $this->getPackagePath($this->session->getPackageKey());
+        $packageLangs                             = $this->getPackageLanguages($packagePath);
+        $fullLangs                                = array_merge_recursive($this->getLanguages(), $packageLangs);
+        $languages                                = array_unique($fullLangs);
         $this->translationFiles                   = [];
         
-        try {
-            if (sizeof($translatedLanguages) > 0) {
-                foreach ($translatedLanguages as $translatedLanguage) {
-                    //Getting correct directory path
-                    $translationsSourceFiles           = $this->getPrefixFileName();
-                    $translationFileDirectorySmallPath = "";
-                    if (empty($translationsSourceFiles) == false) {
-                        $translationsSourceFilesParts = explode("/", trim($translationsSourceFiles));
-                        if (empty($translationsSourceFilesParts) == false) {
-                            array_pop($translationsSourceFilesParts);
-                            $translationFileDirectorySmallPath = implode("/", $translationsSourceFilesParts);
-                        }
-                    }
-                    $translationFileDirectory = trim($translationsResourcePath) . trim($translatedLanguage) . "/";
-                    $translationFilePath      = trim($translationFileDirectory) . trim($translationFile);
-                    $translationFileDirectory = trim($translationFileDirectory) . trim($translationFileDirectorySmallPath);
-
-                    if (file_exists($translationFilePath) == false) {
-                        if (file_exists(trim($translationFileDirectory)) == false) {
-                            \mkdir($translationFileDirectory, 0777, true);
-                        }
-                        if (file_exists(trim($translationFilePath)) == false) {
-                            \touch($translationFilePath);
-                        }
-                        if ((file_exists(trim($translationFilePath)) == true) && (is_file(trim($translationFilePath)) == true)) {
-                            $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
-                        }
-                    } elseif (filesize($translationFilePath) <= 0) {
-                        $this->createEmptyTranslationFile($translationFilePath, $translatedLanguage);
-                    }
-                    $this->translationFiles[] = trim($translationFilePath);
-                }
-            }
-            \clearstatcache();
-        } catch (\Exception $e) {
-            // \Neos\Flow\var_dump($e->getMessage());
-            // exit;
+        foreach ($languages as $language) {
+            $this->translationFiles[] = $this->createFile($language);
         }
+        
+        \clearstatcache();
     }
 
     /**
@@ -256,7 +219,9 @@ class CommonSevices
 
     /**
      * This function is used to get all unique translation IDs from a single Translation file.
+     *
      * @param string $translationFile
+     *
      * @return mixed
      */
     public function getUniqueTranslationIdsFromSingleTranslationFile(
@@ -303,20 +268,19 @@ class CommonSevices
 
     /**
      * This function is used for extracting fileName (removing extension part) Eg: Main.xlf to Main
+     *
      * @return string
      */
     public function getPrefixFileName()
     {
-        $translationFileName = $this->session->getFile();
-        $prefixFileName      = "";
-        if (empty($translationFileName) == false) {
-            $prefixFileNameParts = explode(".xlf", trim($translationFileName));
-            if (empty($prefixFileNameParts) == false) {
-                $prefixFileName = array_shift($prefixFileNameParts);
+        if (!empty($this->session->getFile())) {
+            $parts = explode(".xlf", trim($this->session->getFile()));
+            if (!empty($parts)) {
+                return array_shift($parts);
             }
         }
 
-        return $prefixFileName;
+        return '';
     }
 
     /**
@@ -594,7 +558,54 @@ class CommonSevices
         
         return trim($resourcePath) . trim($language)."/" . trim($file);
     }
+    
+    /**
+     * This function is used for getting subdirectory path for translation directory
+     */
+    private function getSubDirPath()
+    {
+        if (!empty($this->getPrefixFileName())) {
+            $subdirs = explode("/", trim($this->getPrefixFileName()));
+            if (!empty($subdirs)) {
+                array_pop($subdirs);
 
+                return implode("/", $subdirs);
+            }
+        }
+            
+        return '';
+    }
+    
+    /**
+     * This function is used for creating a translation file
+     * If it not exist
+     *
+     * @param string $language
+     *
+     * @return string
+     */
+    private function createFile($language = '')
+    {
+        $packagePath   = $this->getPackagePath($this->session->getPackageKey());
+        $directory     = trim($packagePath) . trim($language) . "/";
+        $file          = trim($directory) . trim($this->session->getFile());
+        $directory     = trim($directory) . trim($this->getSubDirPath());
+        
+        if (!file_exists($file) && filesize($file) <= 0) {
+            if (file_exists(trim($directory)) == false) {
+                \mkdir($directory, 0777, true);
+            }
+            if (file_exists(trim($file)) == false) {
+                \touch($file);
+            }
+            if ((file_exists(trim($file)) == true) && (is_file(trim($file)) == true)) {
+                $this->createEmptyFile($file, $language);
+            }
+        }
+        
+        return $file;
+    }
+    
     /**
      * This function gets the list of translated files from directory
      *
@@ -624,22 +635,22 @@ class CommonSevices
 
     /**
      * This function is used for creating an empty translation file.
-     * @param string $translationFilePath
-     * @param string $translatedLanguage
+     *
+     * @param string $file Translation File Path
+     * @param string $language Language
+     *
      * @return void
      */
-    private function createEmptyTranslationFile(
-        $translationFilePath = "",
-        $translatedLanguage = "en"
-    ) {
-        try {
-            $packageKey = $this->session->getPackageKey();
-            if ((file_exists($translationFilePath) == true) && (is_file($translationFilePath) == true)) {
-                $emptyTranslationFileTemplate = '<?xml version="1.0"?>' . PHP_EOL . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">' . PHP_EOL . ' <file original="" product-name="' . trim($packageKey) . '" source-language="' . trim($translatedLanguage) . '" datatype="plaintext">' . PHP_EOL . '  <body></body>' . PHP_EOL . ' </file>' . PHP_EOL . '</xliff>';
-                \file_put_contents($translationFilePath, $emptyTranslationFileTemplate);
-                \clearstatcache();
-            }
-        } catch (\Exception $e) {
+    private function createEmptyFile($file = "", $language = "en")
+    {
+        if (file_exists($file) && is_file($file)) {
+            $template = '<?xml version="1.0"?>' . PHP_EOL
+                    . '<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">' . PHP_EOL
+                    . ' <file original="" product-name="' . trim($this->session->getPackageKey())
+                    . '" source-language="'. trim($language) . '" datatype="plaintext">' . PHP_EOL
+                    . '  <body></body>' . PHP_EOL . ' </file>' . PHP_EOL . '</xliff>';
+            \file_put_contents($file, $template);
+            \clearstatcache();
         }
     }
     
