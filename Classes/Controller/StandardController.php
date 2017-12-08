@@ -112,7 +112,7 @@ class StandardController extends \Neos\Flow\Mvc\Controller\ActionController
     public function getTranslationsAction()
     {
         $this->isValidLanguages();
-        $this->commonSevices->checkTranslationFilesExists();
+        $this->commonSevices->checkFilesExists();
         $this->view->assignMultiple([
             'translationFileName'     => $this->session->getFile(),
             'translationIds'          => $this->commonSevices->getTranslationIds(),

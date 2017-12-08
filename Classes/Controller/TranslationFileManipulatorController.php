@@ -126,7 +126,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                     foreach ($translationUnitLanguages as $translationUnitLanguage) {
                         $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
                         if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                            $duplicateTranslationUnit = $this->commonSevices->checkGivenTranslationIdExists($translationFileFullPath, $translationId);
+                            $duplicateTranslationUnit = $this->commonSevices->isTranslationIdExists($translationFileFullPath, $translationId);
                             if (empty($duplicateTranslationUnit) == false) {
                                 $duplicateTranslationId = 1;
                             }
@@ -182,7 +182,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
                         if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
                             $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
                         }
-                        $translationUnitAdditionSuccess = $this->commonSevices->addNewTranslationUnitToCurrentTranslationFile($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
+                        $translationUnitAdditionSuccess = $this->commonSevices->addTranslationUnit($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
                     }
                 }
 
