@@ -37,7 +37,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      *
      * @param string $id Translation Id
      * @param string $label Translation Label
-     * @param string $language TranslationLanguage
+     * @param string $language Translation Language
      * @param int $cdataChecker Translation CDATA Content Checker
      * @param int $encodingChecker Translation Unit Encoding Decision Checker
      *
@@ -46,15 +46,12 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
     public function indexAction($id = "", $label = "", $language = '', $cdataChecker = 0, $encodingChecker = 0)
     {
         $isValid       = $this->commonSevices->validateTranslationLabel($label, $language);
-        $filePath      = $this->commonSevices->getTranslationFileFullPath($language);
         
         if ($isValid) {
-            $output = [
-                "status"  => "error",
-                "message" => $isValid,
-            ];
+            $output = ['status'  => 'error', 'message' => $isValid];
         } else {
-            $output = $this->commonSevices->performOpertions($filePath, $id, $label, $cdataChecker, $encodingChecker);
+            $file     = $this->commonSevices->getTranslationFileFullPath($language);
+            $output   = $this->commonSevices->performOpertions($file, $id, $label, $cdataChecker, $encodingChecker);
         }
 
         $this->view->assign('value', $output);
@@ -84,129 +81,122 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      * This function receives the Ajax request and process this request.
      * Based on the request, it adds translation unit to the translation file.
      *
-     * @param string $translationId
-     * @param string $csrfToken
-     * @param array $translationUnitLabels
-     * @param array $translationUnitLanguages
-     * @param array $translationUnitCDATASections
-     * @param array $translationUnitEncodingDecisions
+     * @param string $id Translation Id
+     * @param array $labels Translation Labels
+     * @param array $languages Translation Languages
+     * @param array $cdatas Translation CDATA Content Checker
+     * @param array $encodings Translation Unit Encoding Decision Checker
      *
      * @return void
      */
-    public function addTransaltionUnitAction(
-        $translationId = "",
-        $csrfToken = "",
-        $translationUnitLabels = array(),
-        $translationUnitLanguages = array(),
-        $translationUnitCDATASections = array(),
-        $translationUnitEncodingDecisions = array()
-    ) {
-        $output = array(
-            "status"  => "error",
-            "message" => "Invalid Inputs.",
-        );
-        $flag     = 0;
-        $errorMsg = array();
-
-        try {
-            $packageKey               = $this->session->getPackageKey();
-            $translationsResourcePath = $this->commonSevices->getPackagePath($packageKey);
-            $translationFile          = $this->session->getFile();
-            $duplicateTranslationId   = 0;
-
-            if (empty($translationUnitLanguages) == true) {
-                $errorMsg[] = "Empty translation language input.";
-                $flag       = 1;
-            } else {
-                $translationUnitValidityCheckRegExp = "/^[a-zA-Z]([a-zA-Z0-9_\.]*)[a-zA-Z0-9]$/i";
-                if (preg_match($translationUnitValidityCheckRegExp, $translationId) != 1) {
-                    $errorMsg[] = "Incorrect translation unit Id.";
-                    $flag       = 1;
-                } else {
-                    foreach ($translationUnitLanguages as $translationUnitLanguage) {
-                        $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
-                        if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                            $duplicateTranslationUnit = $this->commonSevices->isTranslationIdExists($translationFileFullPath, $translationId);
-                            if (empty($duplicateTranslationUnit) == false) {
-                                $duplicateTranslationId = 1;
-                            }
-                        }
-                    }
-                    if ($duplicateTranslationId == 1) {
-                        $errorMsg[] = "Duplicate translation unit.";
-                        $flag       = 1;
-                    } else {
-                        foreach ($translationUnitLanguages as $translationUnitLanguagekey => $translationUnitLanguage) {
-                            $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
-                            if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                                $translationLabel                       = "";
-                                $translationCDATAContentChecker         = 0;
-                                $translationUnitEncodingDecisionChecker = 0;
-                                if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
-                                    $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
-                                }
-                                if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
-                                    $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
-                                }
-                                if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
-                                    $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
-                                }
-                                $translationUnitCommonValidationResult = $this->commonSevices->validateTranslationLabel($translationLabel, $translationUnitLanguage);
-                                if (empty($translationUnitCommonValidationResult) == false) {
-                                    $errorMsg[] = trim($translationUnitCommonValidationResult);
-                                    $flag       = 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if ($flag == 1) {
-                $output = array(
-                    "status"  => "error",
-                    "message" => implode(",", $errorMsg),
-                );
-            } else {
-                $translationUnitAdditionSuccess = true;
-                foreach ($translationUnitLanguages as $translationUnitLanguagekey => $translationUnitLanguage) {
-                    $translationFileFullPath = trim($translationsResourcePath) . trim($translationUnitLanguage) . "/" . trim($translationFile);
-                    if ((is_file($translationFileFullPath) == true) && (file_exists($translationFileFullPath) == true)) {
-                        $translationLabel               = "";
-                        $translationCDATAContentChecker = 0;
-                        if (isset($translationUnitLabels[$translationUnitLanguagekey]) == true) {
-                            $translationLabel = $translationUnitLabels[$translationUnitLanguagekey];
-                        }
-                        if (isset($translationUnitCDATASections[$translationUnitLanguagekey]) == true) {
-                            $translationCDATAContentChecker = $translationUnitCDATASections[$translationUnitLanguagekey];
-                        }
-                        if (isset($translationUnitEncodingDecisions[$translationUnitLanguagekey]) == true) {
-                            $translationUnitEncodingDecisionChecker = $translationUnitEncodingDecisions[$translationUnitLanguagekey];
-                        }
-                        $translationUnitAdditionSuccess = $this->commonSevices->addTranslationUnit($translationFileFullPath, $translationId, $translationLabel, $translationCDATAContentChecker, $translationUnitEncodingDecisionChecker);
-                    }
-                }
-
-                if ($translationUnitAdditionSuccess == true) {
-                    $output = array(
-                        "status"  => "success",
-                        "message" => $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully'),
-                    );
-                } else {
-                    $output = array(
-                        "status"  => "error",
-                        "message" => "Some problem in translation unit addition process",
-                    );
-                }
-            }
-        } catch (\Exception $e) {
-            $output = array(
-                "status"  => "error",
-                "message" => $e->getMessage(),
-            );
+    public function addTransaltionUnitAction($id = "", $labels = [], $languages = [], $cdatas = [], $encodings = [])
+    {
+        if ($this->validateTranslationUnits($id, $labels, $languages)) {
+            $output = ['status' => 'error', 'message' => $this->validateTranslationUnits($id, $labels, $languages)];
+        } else {
+            $output = $this->addTransaltionUnits($id, $labels, $languages, $cdatas, $encodings);
         }
+         
         $this->view->assign('value', $output);
     }
     
+    /**
+     * This function is used for validate a set of translation units
+     *
+     * @param string $id Translation Id
+     * @param array $labels
+     * @param array $languages
+     *
+     * @return array
+     */
+    private function validateTranslationUnits($id = "", $labels = [], $languages = [])
+    {
+        if (empty($languages) || !preg_match("/^[a-zA-Z]([a-zA-Z0-9_\.]*)[a-zA-Z0-9]$/i", $id)) {
+            return $this->commonSevices->getTransaltionMessage('invalidTrasIdLangs');
+        } elseif ($this->duplicateTransUnitExists($languages, $id)) {
+            return $this->commonSevices->getTransaltionMessage('duplicateTransUnits');
+        } elseif (!empty($this->validateTransLabels($labels, $languages))) {
+            return $this->commonSevices->getTransaltionMessage('invalidTransLabel');
+        }
+        
+        return false;
+    }
+    
+    /**
+     * This function is used for check whether the duplicate translation unit exits or not
+     *
+     * @param array $languages
+     * @param string $id
+     *
+     * @return bool
+     */
+    private function duplicateTransUnitExists($languages, $id)
+    {
+        foreach ($languages as $language) {
+            $file = $this->commonSevices->getTranslationFileFullPath($language);
+            if (is_file($file) && file_exists($file) && $this->commonSevices->isTranslationIdExists($file, $id)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * This function is used for validating set of translation labels
+     *
+     * @param array $labels
+     * @param array $languages
+     *
+     * @return array
+     */
+    private function validateTransLabels($labels = [], $languages = [])
+    {
+        $errorMsg = [];
+        foreach ($languages as $key => $language) {
+            if (is_file($this->commonSevices->getTranslationFileFullPath($language))
+                && file_exists($this->commonSevices->getTranslationFileFullPath($language))
+                && isset($labels[$key]) && $this->commonSevices->validateTranslationLabel($labels[$key], $language)) {
+                $errorMsg[] = $this->commonSevices->validateTranslationLabel($labels[$key], $language);
+            }
+        }
+        
+        return $errorMsg;
+    }
+    
+    /**
+     * This function is used for adding translation units to a set of translation files
+     *
+     * @param string $id
+     * @param array $labels
+     * @param array $languages
+     * @param array $cdatas
+     * @param array $encoding
+     * @param mixed $encodings
+     *
+     * @return array
+     */
+    private function addTransaltionUnits($id = "", $labels = [], $languages = [], $cdatas = [], $encodings = [])
+    {
+        foreach ($languages as $key => $language) {
+            $file = $this->commonSevices->getTranslationFileFullPath($language);
+            if ((is_file($file) == true) && (file_exists($file) == true)) {
+                $label            = isset($labels[$key])?$labels[$key]:'';
+                $cdata            = isset($cdatas[$key])?$cdatas[$key]:0;
+                $encoding         = isset($encodings[$key])?$cdatas[$key]:0;
+                if (!$this->commonSevices->addTranslationUnit($file, $id, $label, $cdata, $encoding)) {
+                    $message = $this->commonSevices->getTransaltionMessage('transUnitaddProblem');
+                    
+                    return ['status' => 'error', 'message' => $message];
+                }
+            }
+        }
+        
+        $message = $this->commonSevices->getTransaltionMessage('dataWasSavedSuccessfully');
+        
+        return ['status' => 'success', 'message' => $message];
+    }
+
     /**
      * This function is used for removing translation files for a particular language.
      *

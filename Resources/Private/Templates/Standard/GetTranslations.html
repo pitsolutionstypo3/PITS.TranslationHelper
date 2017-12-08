@@ -558,12 +558,11 @@ function addNewTranslationUnitToSetOfFiles(event) {
       type: "POST",
       dataType: "json",
       data: {
-        translationId: addTranslationUnitTranslationUnitId,
-        csrfToken: pitstranslationManagerToken,
-        translationUnitLabels: addTranslationUnitTranslationUnitLabels,
-        translationUnitLanguages: addTranslationUnitTranslationUnitLanguages,
-        translationUnitCDATASections: addTranslationUnitTranslationUnitCDATASections,
-        translationUnitEncodingDecisions: addTranslationUnitTranslationUnitEncodingDecisions
+        id: addTranslationUnitTranslationUnitId,
+        labels: addTranslationUnitTranslationUnitLabels,
+        languages: addTranslationUnitTranslationUnitLanguages,
+        cdataSections: addTranslationUnitTranslationUnitCDATASections,
+        encodingDecisions: addTranslationUnitTranslationUnitEncodingDecisions
       },
       success: function(result,status,xhr) {
         if( result.status == "success") {

@@ -116,25 +116,6 @@ class CommonSevices
     }
 
     /**
-     * This function is used for getting the translated message for corresponding translation unit ID.
-     *
-     * @param string $translationId
-     * @param string  $localeIdentifier
-     *
-     * @return string
-     */
-    public function getCorrectTranslationLabelFromTranslationUnitId(
-        $translationId = "",
-        $localeIdentifier = 'en'
-    ) {
-        $module           = $this->getPrefixFileName();
-        $packageKey       = $this->session->getPackageKey();
-        $locale           = new \Neos\Flow\I18n\Locale($localeIdentifier);
-        
-        return $this->translator->translateById($translationId, [], null, $locale, trim($module), trim($packageKey));
-    }
-
-    /**
      * This function is used for getting the list of available translated files in the given package
      *
      * @param string $folder Parent Folder Name
@@ -189,11 +170,11 @@ class CommonSevices
      */
     public function checkFilesExists()
     {
-        $packagePath                              = $this->getPackagePath($this->session->getPackageKey());
-        $packageLangs                             = $this->getPackageLanguages($packagePath);
-        $fullLangs                                = array_merge_recursive($this->getLanguages(), $packageLangs);
-        $languages                                = array_unique($fullLangs);
-        $this->translationFiles                   = [];
+        $packagePath                  = $this->getPackagePath($this->session->getPackageKey());
+        $packageLangs                 = $this->getPackageLanguages($packagePath);
+        $fullLangs                    = array_merge_recursive($this->getLanguages(), $packageLangs);
+        $languages                    = array_unique($fullLangs);
+        $this->translationFiles       = [];
         
         foreach ($languages as $language) {
             $this->translationFiles[] = $this->createFile($language);
@@ -218,30 +199,6 @@ class CommonSevices
     }
 
     /**
-     * This function is used to get all unique translation IDs from a single Translation file.
-     *
-     * @param string $translationFile
-     *
-     * @return mixed
-     */
-    public function getUniqueTranslationIdsFromSingleTranslationFile(
-        $translationFile = ""
-    ) {
-        $uniqueTranslationIds = array();
-
-        try {
-            if ((empty($translationFile) == false) && (is_file($translationFile) == true) && (file_exists($translationFile) == true)) {
-                $this->getTranslationFileIds($translationFile, $uniqueTranslationIds);
-            }
-        } catch (\Exception $e) {
-            unset($uniqueTranslationIds);
-        }
-        $uniqueTranslationIds = array_unique($uniqueTranslationIds);
-
-        return $uniqueTranslationIds;
-    }
-
-    /**
      * This function is used to get all translation IDs from giving translation file.
      *
      * @param string $file Translation File
@@ -262,7 +219,6 @@ class CommonSevices
             }
             
             $pointer->save($file);
-            $pointer = null;
         }
     }
 
@@ -380,8 +336,7 @@ class CommonSevices
             }
         }
         $pointer->save($file);
-        $pointer = null;
-     
+        
         return true;
     }
 
@@ -401,8 +356,6 @@ class CommonSevices
             return $this->getNodeType($pointer, $id);
         }
         
-        $pointer->save($file);
-                           
         return 0;
     }
 
