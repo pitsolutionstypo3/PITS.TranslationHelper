@@ -187,7 +187,7 @@ class CommonSevices
      *
      * @return void
      */
-    public function checkTranslationFilesExists()
+    public function checkFilesExists()
     {
         $packagePath                              = $this->getPackagePath($this->session->getPackageKey());
         $packageLangs                             = $this->getPackageLanguages($packagePath);
