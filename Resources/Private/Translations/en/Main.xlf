@@ -713,6 +713,15 @@
             <trans-unit id="transUnitaddProblem" xml:space="preserve">
                 <target>Cannot add a new translation instance</target>
             </trans-unit>
+            <trans-unit id="invalidTrasIdLangs" xml:space="preserve">
+                <target>Invalid Translation Id, or Empty Languages</target>
+            </trans-unit>
+            <trans-unit id="duplicateTransUnits" xml:space="preserve">
+                <target>Duplicate translation unit</target>
+            </trans-unit>
+            <trans-unit id="invalidTransLabel" xml:space="preserve">
+                <target>Invalid Translation label</target>
+            </trans-unit>
         </body>
     </file>
 </xliff>
