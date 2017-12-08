@@ -286,7 +286,7 @@ class CommonSevices
     /**
      * This function is used for performing ADD, REMOVE operations in the translation file.
      *
-     * @param string $filePath Translation File
+     * @param string $file Translation File
      * @param string $id Translation Id
      * @param string $label Translation Label
      * @param integer $cdataChecker Translation CDATA Content Checker
@@ -294,167 +294,70 @@ class CommonSevices
      *
      * @return mixed
      */
-    public function performOpertions($filePath = "", $id = "", $label = "", $cdataChecker = 0, $encodingChecker = 0)
+    public function performOpertions($file = "", $id = "", $label = "", $cdataChecker = 0, $encodingChecker = 0)
     {
-        try {
-            $output = array(
-                "status"  => "success",
-                "message" => $this->getTransaltionMessage('dataWasSavedSuccessfully'),
-            );
-
-            if ((empty($filePath) == false) && (is_file($filePath) == true) && (file_exists($filePath) == true)) {
-                $translationIdInstance = $this->checkGivenTranslationIdExists($filePath, $id);
-                if (empty($translationIdInstance) == true) {
-                    $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($filePath, $id, $label, $cdataChecker, $encodingChecker);
-                    if ($addNewTranslationUnitResult == false) {
-                        $output = array(
-                            "status"  => "error",
-                            "message" => "Cannot add a new translation instance",
-                        );
-                    }
-                } else {
-                    $removeTranslationUnitResult = $this->removeTranslationUnit($filePath, $id);
-                    if ($removeTranslationUnitResult == false) {
-                        $output = array(
-                            "status"  => "error",
-                            "message" => "Cannot remove selected translation unit",
-                        );
-                    } else {
-                        $addNewTranslationUnitResult = $this->addNewTranslationUnitToCurrentTranslationFile($filePath, $id, $label, $cdataChecker, $encodingChecker);
-                        if ($addNewTranslationUnitResult == false) {
-                            $output = array(
-                                "status"  => "error",
-                                "message" => "Cannot add a new translation instance",
-                            );
-                        }
-                    }
+        if (!empty($file) && is_file($file) && file_exists($file)) {
+            if (!$this->isTranslationIdExists($file, $id)) {
+                if (!$this->addTranslationUnit($file, $id, $label, $cdataChecker, $encodingChecker)) {
+                    return ["status"  => "error","message" => $this->getTransaltionMessage('transUnitaddProblem')];
+                }
+            } else {
+                if (!$this->removeTranslationUnit($file, $id)) {
+                    return ["status"  => "error","message" => $this->getTransaltionMessage('transUnitRemovalProblem')];
+                }
+                if (!$this->addTranslationUnit($file, $id, $label, $cdataChecker, $encodingChecker)) {
+                    return ["status"  => "error","message" => $this->getTransaltionMessage('transUnitaddProblem')];
                 }
             }
-        } catch (\Exception $e) {
-            $output = array(
-                "status"  => "error",
-                "message" => $e->getMessage(),
-            );
         }
-        
-        return $output;
+                
+        return ['status' => 'success', 'message' => $this->getTransaltionMessage('dataWasSavedSuccessfully')];
     }
 
     /**
      * This function is used for checking whether the given translation ID is exist or not.
-     * @param string $translationFile
-     * @param string $translationId
+     *
+     * @param string $file
+     * @param string $id
+     *
      * @return mixed
      */
-    public function checkGivenTranslationIdExists(
-        $translationFile = "",
-        $translationId = ""
-    ) {
-        $bodyTagElement          = null;
-        $translationUnitIdRecord = null;
-
-        try {
-            $domXmlPointer = new \DOMDocument("1.0");
-            // let's have a nice output
-            $domXmlPointer->preserveWhiteSpace = false;
-            $domXmlPointer->formatOutput       = true;
-            $domXmlPointer->encoding           = "UTF-8";
-            $domXmlPointer->resolveExternals   = true;
-
-            $domXmlPointer->load($translationFile, LIBXML_NOENT);
-
-            if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
-                $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
-                if (empty($bodyTagElements) == false) {
-                    $bodyTagElement = $bodyTagElements->item(0);
-                }
-            }
-            if (empty($bodyTagElement) == false) {
-                $transUnitElements = $bodyTagElement->getElementsByTagName("trans-unit");
-                if (empty($transUnitElements) == false) {
-                    foreach ($transUnitElements as $transUnitElement) {
-                        $transUnitElement->setIdAttribute("id", true);
-                    }
-                    // Get the id value
-                    $translationUnitIdRecord = $domXmlPointer->getElementById($translationId);
-                    if (empty($translationUnitIdRecord) == true) {
-                        $translationUnitIdRecord = null;
-                    }
-                }
-                $domXmlPointer->save($translationFile);
-            }
-            $domXmlPointer = null;
-        } catch (\Exception $e) {
+    public function isTranslationIdExists($file = "", $id = "")
+    {
+        $pointer = $this->getDOMXMLPointer($file);
+            
+        if (!empty($this->setIdAttrTransUnit($file, $id))) {
+            return !empty($pointer->getElementById($id));
         }
-
-        return $translationUnitIdRecord;
+        
+        return false;
     }
 
     /**
      * This function is used for adding a new translation unit to the current translation file.
-     * @param string $translationFile
-     * @param string $translationId
-     * @param string $translationLabel
-     * @param integer $translationCDATAContentChecker
-     * @param integer $translationUnitEncodingDecisionChecker
+     *
+     * @param string  $file  Translation File
+     * @param string  $id    Translation Id
+     * @param string  $label Translation Label
+     * @param integer $cdataChecker
+     * @param integer $encodingChecker
+     *
      * @return mixed
      */
-    public function addNewTranslationUnitToCurrentTranslationFile(
-        $translationFile = "",
-        $translationId = "",
-        $translationLabel = "",
-        $translationCDATAContentChecker = 0,
-        $translationUnitEncodingDecisionChecker = 0
-    ) {
-        $output         = true;
-        $bodyTagElement = null;
-
-        try {
-            $domXmlPointer = new \DOMDocument("1.0");
-            // let's have a nice output
-            $domXmlPointer->preserveWhiteSpace = false;
-            $domXmlPointer->formatOutput       = true;
-            $domXmlPointer->encoding           = "UTF-8";
-            $domXmlPointer->resolveExternals   = true;
-
-            $domXmlPointer->load($translationFile, LIBXML_NOENT);
-
-            if ((empty($domXmlPointer) == false) && (empty($translationId) == false)) {
-                $bodyTagElements = $domXmlPointer->getElementsByTagName("body");
-                if (empty($bodyTagElements) == false) {
-                    $bodyTagElement = $bodyTagElements->item(0);
-                }
-            }
-            if (empty($bodyTagElement) == false) {
-                $newTransUnitElement = $domXmlPointer->createElement("trans-unit");
-                $newTransUnitElement->setAttribute("id", trim($translationId));
-                $newTransUnitElement->setAttribute("xml:space", "preserve");
-
-                if ($translationUnitEncodingDecisionChecker == 1) {
-                    $translationLabel = htmlentities($translationLabel, ENT_QUOTES, "UTF-8");
-                }
-
-                // Check whether the given translation label is CDATA or not
-                if ($translationCDATAContentChecker == 1) {
-                    $newSourceTagForUnitElement      = $domXmlPointer->createElement("target");
-                    $newSourceTagForUnitCDATASection = $domXmlPointer->createCDATASection(trim($translationLabel));
-                    $newSourceTagForUnitElement->appendChild($newSourceTagForUnitCDATASection);
-                } else {
-                    $newSourceTagForUnitElement = $domXmlPointer->createElement("target", trim($translationLabel));
-                }
-                $newTransUnitElement->appendChild($newSourceTagForUnitElement);
-
-                $bodyTagElement->appendChild($newTransUnitElement);
-                $domXmlPointer->save($translationFile);
-            } else {
-                $output = false;
-            }
-            $domXmlPointer = null;
-        } catch (\Exception $e) {
-            $output = false;
+    public function addTranslationUnit($file = "", $id = "", $label = "", $cdataChecker = 0, $encodingChecker = 0)
+    {
+        $pointer        = $this->getDOMXMLPointer($file);
+        $bodyTagElement = $this->getBodyTagElement($pointer, $id);
+            
+        if (!empty($bodyTagElement)) {
+            $transUnit = $this->createTranslationElement($file, $label, $cdataChecker, $encodingChecker);
+            $bodyTagElement->appendChild($transUnit);
+            $pointer->save($file);
+                
+            return true;
         }
-
-        return $output;
+        
+        return false;
     }
 
     /**
@@ -557,6 +460,40 @@ class CommonSevices
         $file          = $this->session->getFile();
         
         return trim($resourcePath) . trim($language)."/" . trim($file);
+    }
+    
+    /**
+     * This function is used for creating a new translation unit element
+     *
+     * @param string $file
+     * @param string $label
+     * @param int $cdataChecker
+     * @param int $encodingChecker
+     *
+     * @return mixed
+     */
+    private function createTranslationElement($file = '', $label = '', $cdataChecker = 0, $encodingChecker = 0)
+    {
+        $pointer             = $this->getDOMXMLPointer($file);
+        $TransUnit           = $pointer->createElement("trans-unit");
+        $TransUnit->setAttribute("id", trim($id));
+        $TransUnit->setAttribute("xml:space", "preserve");
+
+        if ($encodingChecker) {
+            $label = htmlentities($label, ENT_QUOTES, "UTF-8");
+        }
+
+        // Check whether the given translation label is CDATA or not
+        if ($cdataChecker) {
+            $tagElement      = $pointer->createElement("target");
+            $cdataElement    = $pointer->createCDATASection(trim($label));
+            $tagElement->appendChild($cdataElement);
+        } else {
+            $tagElement = $pointer->createElement("target", trim($label));
+        }
+        $TransUnit->appendChild($tagElement);
+                
+        return $TransUnit;
     }
     
     /**
@@ -696,8 +633,8 @@ class CommonSevices
     /**
      * This function is used for setting id attribute for trans-unit elements
      *
-     * @param string $id Translation label Id
      * @param mixed $file
+     * @param string $id Translation label Id
      *
      * @return mixed
      */
