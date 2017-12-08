@@ -115,7 +115,7 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
             return $this->commonSevices->getTransaltionMessage('invalidTrasIdLangs');
         } elseif ($this->duplicateTransUnitExists($languages, $id)) {
             return $this->commonSevices->getTransaltionMessage('duplicateTransUnits');
-        } elseif (!empty($this->validateTransLabels($labels, $languages))) {
+        } elseif (!$this->validateTransLabels($labels, $languages)) {
             return $this->commonSevices->getTransaltionMessage('invalidTransLabel');
         }
         
@@ -148,20 +148,19 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      * @param array $labels
      * @param array $languages
      *
-     * @return array
+     * @return bool
      */
     private function validateTransLabels($labels = [], $languages = [])
     {
-        $errorMsg = [];
         foreach ($languages as $key => $language) {
             if (is_file($this->commonSevices->getTranslationFileFullPath($language))
                 && file_exists($this->commonSevices->getTranslationFileFullPath($language))
                 && isset($labels[$key]) && $this->commonSevices->validateTranslationLabel($labels[$key], $language)) {
-                $errorMsg[] = $this->commonSevices->validateTranslationLabel($labels[$key], $language);
+                return false;
             }
         }
         
-        return $errorMsg;
+        return true;
     }
     
     /**
