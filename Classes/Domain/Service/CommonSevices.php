@@ -282,7 +282,7 @@ class CommonSevices
     {
         $pointer = $this->getDOMXMLPointer($file);
             
-        if (!empty($this->setIdAttrTransUnit($file, $id))) {
+        if (!empty($this->setIdAttrTransUnit($pointer, $id))) {
             return !empty($pointer->getElementById($id));
         }
         
@@ -306,7 +306,7 @@ class CommonSevices
         $bodyTagElement = $this->getBodyTagElement($pointer, $id);
             
         if (!empty($bodyTagElement)) {
-            $transUnit = $this->createTranslationElement($file, $label, $cdataChecker, $encodingChecker);
+            $transUnit = $this->createTranslationElement($id, $pointer, $label, $cdataChecker, $encodingChecker);
             $bodyTagElement->appendChild($transUnit);
             $pointer->save($file);
                 
@@ -329,7 +329,7 @@ class CommonSevices
         $pointer  =  $this->getDOMXMLPointer($file);
         $bodyTags = $this->getBodyTagElement($pointer, $id);
         if (!empty($bodyTags)) {
-            $this->setIdAttrTransUnit($file, $id);
+            $this->setIdAttrTransUnit($pointer, $id);
             $record = $pointer->getElementById($id);
             if (empty($record) || empty($bodyTags->removeChild($record))) {
                 return false;
@@ -352,7 +352,7 @@ class CommonSevices
     {
         $pointer =  $this->getDOMXMLPointer($file);
                 
-        if (!empty($this->setIdAttrTransUnit($file, $id))) {
+        if (!empty($this->setIdAttrTransUnit($pointer, $id))) {
             return $this->getNodeType($pointer, $id);
         }
         
@@ -418,35 +418,35 @@ class CommonSevices
     /**
      * This function is used for creating a new translation unit element
      *
-     * @param string $file
+     * @param string $id
+     * @param DOMDocument $pointer
      * @param string $label
-     * @param int $cdataChecker
-     * @param int $encodingChecker
+     * @param int $cdata
+     * @param int $encoding
      *
      * @return mixed
      */
-    private function createTranslationElement($file = '', $label = '', $cdataChecker = 0, $encodingChecker = 0)
+    private function createTranslationElement($id = '', $pointer = null, $label = '', $cdata = 0, $encoding = 0)
     {
-        $pointer             = $this->getDOMXMLPointer($file);
-        $TransUnit           = $pointer->createElement("trans-unit");
-        $TransUnit->setAttribute("id", trim($id));
-        $TransUnit->setAttribute("xml:space", "preserve");
+        $transUnit           = $pointer->createElement("trans-unit");
+        $transUnit->setAttribute("id", trim($id));
+        $transUnit->setAttribute("xml:space", "preserve");
 
-        if ($encodingChecker) {
+        if ($encoding) {
             $label = htmlentities($label, ENT_QUOTES, "UTF-8");
         }
 
         // Check whether the given translation label is CDATA or not
-        if ($cdataChecker) {
+        if ($cdata) {
             $tagElement      = $pointer->createElement("target");
             $cdataElement    = $pointer->createCDATASection(trim($label));
             $tagElement->appendChild($cdataElement);
         } else {
             $tagElement = $pointer->createElement("target", trim($label));
         }
-        $TransUnit->appendChild($tagElement);
+        $transUnit->appendChild($tagElement);
                 
-        return $TransUnit;
+        return $transUnit;
     }
     
     /**
@@ -586,14 +586,13 @@ class CommonSevices
     /**
      * This function is used for setting id attribute for trans-unit elements
      *
-     * @param mixed $file
+     * @param DOMDocument $pointer
      * @param string $id Translation label Id
      *
      * @return mixed
      */
-    private function setIdAttrTransUnit($file = '', $id = '')
+    private function setIdAttrTransUnit($pointer = null, $id = '')
     {
-        $pointer        =  $this->getDOMXMLPointer($file); //DOMXML pointer
         $bodyTagElement = $this->getBodyTagElement($pointer, $id);
         $elements       = null; // trans-unit xml elements
         

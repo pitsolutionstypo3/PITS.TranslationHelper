@@ -91,13 +91,16 @@ class TranslationFileManipulatorController extends \Neos\Flow\Mvc\Controller\Act
      */
     public function addTransaltionUnitAction($id = "", $labels = [], $languages = [], $cdatas = [], $encodings = [])
     {
-        if ($this->validateTranslationUnits($id, $labels, $languages)) {
-            $output = ['status' => 'error', 'message' => $this->validateTranslationUnits($id, $labels, $languages)];
-        } else {
-            $output = $this->addTransaltionUnits($id, $labels, $languages, $cdatas, $encodings);
+        try {
+            if ($this->validateTranslationUnits($id, $labels, $languages)) {
+                $output = ['status' => 'error', 'message' => $this->validateTranslationUnits($id, $labels, $languages)];
+            } else {
+                $output = $this->addTransaltionUnits($id, $labels, $languages, $cdatas, $encodings);
+            }
+
+            $this->view->assign('value', $output);
+        } catch (\Exception $ex) {
         }
-         
-        $this->view->assign('value', $output);
     }
     
     /**
