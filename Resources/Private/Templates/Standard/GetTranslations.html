@@ -1,5 +1,6 @@
-{namespace neos=Neos\Neos\ViewHelpers}
+{namespace f=Neos\FluidAdaptor\ViewHelpers}
 {namespace pitsTranslationHelper=PITS\TranslationHelper\Domain\ViewHelper}
+{namespace neos=Neos\Neos\ViewHelpers}
 <f:layout name="Default" />
 <f:section name="Content">
 <style type="text/css">
@@ -178,7 +179,7 @@ $(document).ready(function() {
                             <td>
                               <div>
                                 <f:form method="post" class="commonTranslationHelperForm" action="getTranslations" controller="Standard" package="PITS.TranslationHelper" name="translation_{translationKey}_language_{translatedLanguageKey}_form" enctype="multipart/form-data" >
-                                  <f:form.textarea class="pitsTranslationBlockstranslationKeyDescription" id="translation_{translationKey}_language_{translatedLanguageKey}_description"  data="{'reset': '{f:translate(id:translationId,package:packageKey,locale:translatedLanguage,source:translationSource)}'}" name="translation_{translationKey}_language_{translatedLanguageKey}_description" rows="2" cols="80" value="{f:translate(id:translationId,package:packageKey,locale:translatedLanguage,source:translationSource)}" />
+                                  <f:form.textarea class="pitsTranslationBlockstranslationKeyDescription" id="translation_{translationKey}_language_{translatedLanguageKey}_description"  data="{'reset': '{f:translate(id:translationId,package:packageKey,locale:translatedLanguage,source:translationSource,value:\' \')}'}" name="translation_{translationKey}_language_{translatedLanguageKey}_description" rows="2" cols="80" value="{f:translate(id:translationId,package:packageKey,locale:translatedLanguage,source:translationSource,value:' ')}" />
                                   <f:form.hidden name="translation_{translationKey}_language_{translatedLanguageKey}_translationId" id="translation_{translationKey}_language_{translatedLanguageKey}_translationId" value="{translationId}" />
                                   <f:form.hidden name="translation_{translationKey}_language_{translatedLanguageKey}_language" id="translation_{translationKey}_language_{translatedLanguageKey}_language" value="{translatedLanguage}" />
                                   <div class="cdata_selection">

@@ -438,11 +438,11 @@ class CommonSevices
 
         // Check whether the given translation label is CDATA or not
         if ($cdata) {
-            $tagElement      = $pointer->createElement("target");
+            $tagElement      = $pointer->createElement("source");
             $cdataElement    = $pointer->createCDATASection(trim($label));
             $tagElement->appendChild($cdataElement);
         } else {
-            $tagElement = $pointer->createElement("target", trim($label));
+            $tagElement = $pointer->createElement("source", trim($label));
         }
         $transUnit->appendChild($tagElement);
                 
@@ -618,7 +618,7 @@ class CommonSevices
     {
         $transUnitRecord = $pointer->getElementById($id);
         if (!empty($transUnitRecord)) {
-            $transUnitSources = $transUnitRecord->getElementsByTagName("target");
+            $transUnitSources = $transUnitRecord->getElementsByTagName("source");
             if (!empty($transUnitSources)) {
                 $targetTag = $transUnitSources->item(0);
                 if (!empty($targetTag) && $targetTag->hasChildNodes() && !empty($targetTag->firstChild)) {
